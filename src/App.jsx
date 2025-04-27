@@ -7,11 +7,11 @@ import {
 
 // Import Components
 import Navbar from './Components/Navbar';
-import Sidebar from './components/Sidebar';
-import Footer from './components/Footer';
-import Auth from './components/Auth';
-import Profile from './components/Profile';
-import ProtectedRoute from './components/ProtectedRoute';
+import Sidebar from './Components/Sidebar';
+import Footer from './Components/Footer';
+import Auth from './Components/Auth';
+import Profile from './Components/Profile';
+import ProtectedRoute from './Components/ProtectedRoute';
 
 // Import Pages
 import Hero from './Pages/Hero';
