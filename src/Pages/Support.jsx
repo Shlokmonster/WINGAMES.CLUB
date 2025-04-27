@@ -2,7 +2,7 @@ import React from 'react';
 // Removed useState, layout components (Navbar, Sidebar, Footer), and icons not used here
 
 // Import GameCard with correct path (lowercase 'components')
-import GameCard from '../components/GameCard';
+import GameCard from '../Components/GameCard';
 
 
 // Support Images
