@@ -97,9 +97,9 @@ const PlayGames = () => {
         
         socketRef.current.on('gameStarting', (data) => {
             setMatchStatus(data.message);
-            // Redirect to game page after a short delay
+            // Redirect to home page after a short delay
             setTimeout(() => {
-                navigate(`/game/${data.gameId}`);
+                navigate('/');
             }, 2000);
         });
         

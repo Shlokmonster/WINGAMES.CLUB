@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -33,8 +34,8 @@ const redisClient = Redis.createClient({
 })();
 
 // Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL || 'https://your-supabase-url.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'your-supabase-key';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://your-supabase-url.supabase.co';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'your-supabase-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Store active players waiting for a match
