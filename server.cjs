@@ -240,14 +240,22 @@ async function storeGameInSupabase(gameRoom) {
       return;
     }
     
+    // Ensure bet_amount is set
+    let betAmount = gameRoom.betAmount;
+    if (betAmount === undefined || betAmount === null) {
+      console.warn('Warning: betAmount is missing in gameRoom, defaulting to 0');
+      betAmount = 0;
+    }
+    
     const { data, error } = await supabase
       .from('games')
       .insert([
         {
           room_code: gameRoom.roomCode,
-          bet_amount: gameRoom.betAmount,
+          bet_amount: betAmount,
           status: gameRoom.status,
           created_at: gameRoom.createdAt,
+          game_type: 'ludo',
           game_data: {
             players: gameRoom.players.map(p => ({
               user_id: p.userId,

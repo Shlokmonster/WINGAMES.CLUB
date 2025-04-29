@@ -3,6 +3,8 @@ import { FaDice, FaSpinner } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { supabase } from '../lib/supabase';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PlayGames = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
@@ -50,6 +52,7 @@ const PlayGames = () => {
         // Socket event listeners
         socketRef.current.on('waitingForMatch', (data) => {
             setMatchStatus(data.message);
+            toast.info(data.message);
         });
         
         socketRef.current.on('matchFound', (data) => {
@@ -58,9 +61,11 @@ const PlayGames = () => {
             
             if (data.isCreator) {
                 setMatchStatus(`Match found! You will create the room code.`);
+                toast.success('Match found! You will create the room code.');
                 setShowRoomInput(true);
             } else {
                 setMatchStatus(`Match found! Waiting for opponent to create room code...`);
+                toast.info('Match found! Waiting for opponent to create room code...');
             }
             
             setGameRoom({
@@ -71,6 +76,7 @@ const PlayGames = () => {
         
         socketRef.current.on('roomCreated', (data) => {
             setMatchStatus(data.message);
+            toast.info(data.message);
             setGameRoom(prev => ({
                 ...prev,
                 roomCode: data.roomCode
@@ -79,10 +85,12 @@ const PlayGames = () => {
         
         socketRef.current.on('opponentJoined', (data) => {
             setMatchStatus(`Opponent ${data.opponent.username} has joined the room!`);
+            toast.success(`Opponent ${data.opponent.username} has joined the room!`);
         });
         
         socketRef.current.on('roomJoined', (data) => {
             setMatchStatus(`You have joined the room!`);
+            toast.success('You have joined the room!');
             setGameRoom(prev => ({
                 ...prev,
                 roomCode: data.roomCode,
@@ -93,11 +101,12 @@ const PlayGames = () => {
         socketRef.current.on('playerReadyUpdate', (data) => {
             setOpponentReady(data.readyPlayers > 1);
             setMatchStatus(`${data.readyPlayers} of ${data.totalPlayers} players ready`);
+            toast.info(`${data.readyPlayers} of ${data.totalPlayers} players ready`);
         });
         
         socketRef.current.on('gameStarting', (data) => {
             setMatchStatus(data.message);
-            // Redirect to home page after a short delay
+            toast.success(data.message);
             setTimeout(() => {
                 navigate('/');
             }, 2000);
@@ -105,7 +114,7 @@ const PlayGames = () => {
         
         socketRef.current.on('playerLeft', (data) => {
             setMatchStatus(data.message);
-            // Reset game room after a delay
+            toast.error(data.message);
             setTimeout(() => {
                 setGameRoom(null);
                 setIsReady(false);
@@ -117,6 +126,7 @@ const PlayGames = () => {
         
         socketRef.current.on('roomError', (data) => {
             setError(data.message);
+            toast.error(data.message);
             setTimeout(() => setError(''), 5000);
         });
         
@@ -129,6 +139,7 @@ const PlayGames = () => {
             }));
             setShowRoomInput(true);
             setMatchStatus(data.message);
+            toast.info(data.message);
         });
         
         // Cleanup on unmount
@@ -194,6 +205,7 @@ const PlayGames = () => {
 
     return (
         <div className="play-games-container">
+            <ToastContainer position="top-center" autoClose={4000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             <div className="betting-dashboard">
                 <h2>Select Bet Amount</h2>
                 
