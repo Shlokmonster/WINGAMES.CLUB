@@ -62,46 +62,100 @@ io.on('connection', (socket) => {
     );
 
     if (waitingPlayer) {
-      // Match found! Create a game room
-      const roomCode = generateRoomCode();
-      const gameId = `game_${roomCode}`;
+      // Match found! Randomly decide who will create the room
+      const isCreator = Math.random() < 0.5;
       
-      // Store game room info
-      gameRooms.set(gameId, {
-        roomCode,
-        players: [
-          { userId: waitingPlayer.userId, username: waitingPlayer.username, socketId: waitingPlayer.socketId, ready: false },
-          { userId, username, socketId: socket.id, ready: false }
-        ],
-        betAmount,
-        status: 'waiting',
-        createdAt: new Date().toISOString()
+      // Notify both players about the match and who will create the room
+      io.to(waitingPlayer.socketId).emit('matchFound', { 
+        isCreator: !isCreator, // Opposite of the current player
+        opponent: { userId, username, socketId: socket.id },
+        betAmount
+      });
+      
+      socket.emit('matchFound', { 
+        isCreator: isCreator,
+        opponent: { userId: waitingPlayer.userId, username: waitingPlayer.username, socketId: waitingPlayer.socketId },
+        betAmount
       });
 
       // Remove the waiting player from the queue
       waitingPlayers.delete(waitingPlayer.socketId);
-
-      // Notify both players about the match
-      io.to(waitingPlayer.socketId).emit('matchFound', { 
-        roomCode, 
-        opponent: { userId, username },
-        isCreator: true // First player creates the room
-      });
-      
-      socket.emit('matchFound', { 
-        roomCode, 
-        opponent: { userId: waitingPlayer.userId, username: waitingPlayer.username },
-        isCreator: false
-      });
-
-      // Join both players to the game room
-      socket.join(gameId);
-      io.sockets.sockets.get(waitingPlayer.socketId).join(gameId);
     } else {
       // No match found, add to waiting queue
       waitingPlayers.set(socket.id, { userId, username, betAmount, socketId: socket.id });
       socket.emit('waitingForMatch', { message: 'Waiting for an opponent...' });
     }
+  });
+
+  // Handle room code creation by the designated player
+  socket.on('createRoomCode', ({ userId, username, roomCode, opponentId, opponentSocketId }) => {
+    console.log(`Player ${username} created room code: ${roomCode}`);
+    
+    // Create a game room
+    const gameId = `game_${roomCode}`;
+    
+    // Store game room info
+    gameRooms.set(gameId, {
+      roomCode,
+      players: [
+        { userId, username, socketId: socket.id, ready: false, isCreator: true },
+        { userId: opponentId, socketId: opponentSocketId, ready: false, isCreator: false }
+      ],
+      status: 'waiting',
+      createdAt: new Date().toISOString()
+    });
+    
+    // Join the creator to the room
+    socket.join(gameId);
+    
+    // Notify creator that room was created
+    socket.emit('roomCreated', { 
+      roomCode,
+      message: 'Room created. Waiting for opponent to join...'
+    });
+
+    // Notify opponent directly using their socketId
+    if (opponentSocketId) {
+      console.log('Emitting roomCodeAvailable to', opponentSocketId, 'with code', roomCode);
+      io.to(opponentSocketId).emit('roomCodeAvailable', {
+        roomCode,
+        message: 'Opponent has created the room. Please join using the code.'
+      });
+    }
+  });
+  
+  // Handle opponent joining with the room code
+  socket.on('joinWithRoomCode', ({ userId, username, roomCode }) => {
+    console.log(`Player ${username} joining with room code: ${roomCode}`);
+    
+    const gameId = `game_${roomCode}`;
+    const gameRoom = gameRooms.get(gameId);
+    
+    if (!gameRoom) {
+      socket.emit('roomError', { message: 'Room not found. Please check the room code.' });
+      return;
+    }
+    
+    // Update opponent info
+    gameRoom.players[1].userId = userId;
+    gameRoom.players[1].username = username;
+    gameRoom.players[1].socketId = socket.id;
+    
+    // Join the player to the socket room
+    socket.join(gameId);
+    
+    // Notify both players that they're in the same room
+    io.to(gameRoom.players[0].socketId).emit('opponentJoined', { 
+      opponent: { userId, username }
+    });
+    
+    socket.emit('roomJoined', { 
+      roomCode,
+      opponent: { 
+        userId: gameRoom.players[0].userId, 
+        username: gameRoom.players[0].username 
+      }
+    });
   });
 
   // Handle player ready status
@@ -178,6 +232,13 @@ io.on('connection', (socket) => {
 // Store game in Supabase
 async function storeGameInSupabase(gameRoom) {
   try {
+    // Check if we have valid Supabase credentials
+    if (!supabaseUrl || supabaseUrl === 'https://your-supabase-url.supabase.co' || 
+        !supabaseKey || supabaseKey === 'your-supabase-key') {
+      console.log('Skipping Supabase storage: Invalid credentials');
+      return;
+    }
+    
     const { data, error } = await supabase
       .from('games')
       .insert([
@@ -186,10 +247,12 @@ async function storeGameInSupabase(gameRoom) {
           bet_amount: gameRoom.betAmount,
           status: gameRoom.status,
           created_at: gameRoom.createdAt,
-          players: gameRoom.players.map(p => ({
-            user_id: p.userId,
-            username: p.username
-          }))
+          game_data: {
+            players: gameRoom.players.map(p => ({
+              user_id: p.userId,
+              username: p.username
+            }))
+          }
         }
       ]);
     
@@ -203,6 +266,13 @@ async function storeGameInSupabase(gameRoom) {
 // Update game in Supabase
 async function updateGameInSupabase(gameRoom) {
   try {
+    // Check if we have valid Supabase credentials
+    if (!supabaseUrl || supabaseUrl === 'https://your-supabase-url.supabase.co' || 
+        !supabaseKey || supabaseKey === 'your-supabase-key') {
+      console.log('Skipping Supabase update: Invalid credentials');
+      return;
+    }
+    
     const { data, error } = await supabase
       .from('games')
       .update({ status: gameRoom.status })

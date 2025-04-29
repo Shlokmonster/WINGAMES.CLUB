@@ -13,6 +13,10 @@ const PlayGames = () => {
     const [opponentReady, setOpponentReady] = useState(false);
     const [user, setUser] = useState(null);
     const [username, setUsername] = useState('');
+    const [roomCode, setRoomCode] = useState('');
+    const [isCreator, setIsCreator] = useState(false);
+    const [showRoomInput, setShowRoomInput] = useState(false);
+    const [error, setError] = useState('');
     const socketRef = useRef(null);
     const navigate = useNavigate();
     
@@ -50,12 +54,40 @@ const PlayGames = () => {
         
         socketRef.current.on('matchFound', (data) => {
             setIsMatchmaking(false);
-            setMatchStatus(`Match found! Room code: ${data.roomCode}`);
+            setIsCreator(data.isCreator);
+            
+            if (data.isCreator) {
+                setMatchStatus(`Match found! You will create the room code.`);
+                setShowRoomInput(true);
+            } else {
+                setMatchStatus(`Match found! Waiting for opponent to create room code...`);
+            }
+            
             setGameRoom({
-                roomCode: data.roomCode,
                 opponent: data.opponent,
-                isCreator: data.isCreator
+                betAmount: data.betAmount
             });
+        });
+        
+        socketRef.current.on('roomCreated', (data) => {
+            setMatchStatus(data.message);
+            setGameRoom(prev => ({
+                ...prev,
+                roomCode: data.roomCode
+            }));
+        });
+        
+        socketRef.current.on('opponentJoined', (data) => {
+            setMatchStatus(`Opponent ${data.opponent.username} has joined the room!`);
+        });
+        
+        socketRef.current.on('roomJoined', (data) => {
+            setMatchStatus(`You have joined the room!`);
+            setGameRoom(prev => ({
+                ...prev,
+                roomCode: data.roomCode,
+                opponent: data.opponent
+            }));
         });
         
         socketRef.current.on('playerReadyUpdate', (data) => {
@@ -78,7 +110,25 @@ const PlayGames = () => {
                 setGameRoom(null);
                 setIsReady(false);
                 setOpponentReady(false);
+                setShowRoomInput(false);
+                setRoomCode('');
             }, 3000);
+        });
+        
+        socketRef.current.on('roomError', (data) => {
+            setError(data.message);
+            setTimeout(() => setError(''), 5000);
+        });
+        
+        // Listen for roomCodeAvailable (opponent receives room code in real-time)
+        socketRef.current.on('roomCodeAvailable', (data) => {
+            console.log('Received roomCodeAvailable:', data);
+            setGameRoom(prev => ({
+                ...prev,
+                roomCode: data.roomCode
+            }));
+            setShowRoomInput(true);
+            setMatchStatus(data.message);
         });
         
         // Cleanup on unmount
@@ -114,10 +164,32 @@ const PlayGames = () => {
     };
 
     const handleReady = () => {
-        if (!gameRoom) return;
+        if (!gameRoom || !gameRoom.roomCode) return;
         
         setIsReady(true);
         socketRef.current.emit('playerReady', { roomCode: gameRoom.roomCode });
+    };
+    
+    const createRoomCode = () => {
+        if (!gameRoom || !user || !username || !roomCode) return;
+        
+        socketRef.current.emit('createRoomCode', {
+            userId: user.id,
+            username,
+            roomCode: roomCode.toUpperCase(),
+            opponentId: gameRoom.opponent.userId,
+            opponentSocketId: gameRoom.opponent.socketId
+        });
+    };
+    
+    const joinWithRoomCode = () => {
+        if (!gameRoom || !user || !username || !roomCode) return;
+        
+        socketRef.current.emit('joinWithRoomCode', {
+            userId: user.id,
+            username,
+            roomCode: roomCode.toUpperCase()
+        });
     };
 
     return (
@@ -125,7 +197,9 @@ const PlayGames = () => {
             <div className="betting-dashboard">
                 <h2>Select Bet Amount</h2>
                 
-                {!gameRoom && !isMatchmaking && (
+                {error && <div className="error-message">{error}</div>}
+                
+                {!gameRoom && !isMatchmaking && !showRoomInput && (
                     <>
                         <div className="bet-amounts-grid">
                             {betAmounts.map((amount) => (
@@ -155,6 +229,49 @@ const PlayGames = () => {
                     </>
                 )}
                 
+                {showRoomInput && gameRoom && (
+                    <div className="room-input-container">
+                        <h3>{isCreator ? 'Create Room Code' : 'Enter Room Code'}</h3>
+                        <p>Opponent: {gameRoom.opponent.username}</p>
+                        <p>Bet Amount: ₹{gameRoom.betAmount}</p>
+                        <input 
+                            type="text" 
+                            value={roomCode}
+                            onChange={(e) => setRoomCode(e.target.value)}
+                            placeholder="Enter room code"
+                            maxLength={6}
+                        />
+                        <div className="room-actions">
+                            {isCreator ? (
+                                <button 
+                                    className="create-room-btn"
+                                    onClick={createRoomCode}
+                                    disabled={!roomCode || roomCode.length < 3}
+                                >
+                                    Create Room
+                                </button>
+                            ) : (
+                                <button 
+                                    className="join-room-btn"
+                                    onClick={joinWithRoomCode}
+                                    disabled={!roomCode || roomCode.length < 3}
+                                >
+                                    Join Room
+                                </button>
+                            )}
+                            <button 
+                                className="back-btn"
+                                onClick={() => {
+                                    setShowRoomInput(false);
+                                    setRoomCode('');
+                                }}
+                            >
+                                Back
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
                 {isMatchmaking && (
                     <div className="matchmaking-status">
                         <FaSpinner className="spinner-icon" />
@@ -168,10 +285,14 @@ const PlayGames = () => {
                     </div>
                 )}
                 
-                {gameRoom && !isReady && (
+                {gameRoom && gameRoom.roomCode && !isReady && (
                     <div className="game-room-info">
                         <h3>Game Room: {gameRoom.roomCode}</h3>
-                        <p>Opponent: {gameRoom.opponent.username}</p>
+                        {gameRoom.opponent ? (
+                            <p>Opponent: {gameRoom.opponent.username}</p>
+                        ) : (
+                            <p>Waiting for opponent to join...</p>
+                        )}
                         <p>{matchStatus}</p>
                         <button 
                             className="ready-btn"
@@ -185,7 +306,7 @@ const PlayGames = () => {
                 {gameRoom && isReady && (
                     <div className="waiting-for-opponent">
                         <h3>Game Room: {gameRoom.roomCode}</h3>
-                        <p>Opponent: {gameRoom.opponent.username}</p>
+                        <p>Opponent: {gameRoom.opponent?.username || 'Waiting...'}</p>
                         <p>{matchStatus}</p>
                         <div className="ready-status">
                             <div className={`player-status ${isReady ? 'ready' : ''}`}>

@@ -1289,3 +1289,118 @@ button {
         width: 100%;
     }
 }
+
+/* Room Input Styles */
+.room-input-container {
+    text-align: center;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.room-input-container h3 {
+    color: var(--primary-gold);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.room-input-container input {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--primary-gold);
+    border-radius: 8px;
+    background: var(--background-darker);
+    color: var(--text-light);
+    font-size: 1.2rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.room-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.create-room-btn, .join-room-btn, .back-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.create-room-btn {
+    background: var(--primary-gold);
+    color: var(--text-dark);
+}
+
+.create-room-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.join-room-btn {
+    background: var(--secondary-gold);
+    color: var(--text-dark);
+}
+
+.join-room-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+}
+
+.back-btn {
+    background: var(--background-darker);
+    color: var(--text-light);
+    border: 1px solid var(--primary-gold);
+}
+
+.back-btn:hover {
+    background: var(--background-light);
+}
+
+.game-options {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.error-message {
+    background: var(--error-red);
+    color: var(--text-light);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments for room input */
+@media (max-width: 768px) {
+    .room-actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .create-room-btn, .join-room-btn, .back-btn {
+        width: 100%;
+    }
+    
+    .game-options {
+        flex-direction: column;
+    }
+}
