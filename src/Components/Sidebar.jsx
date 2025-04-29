@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import PlayGames from '../Pages/PlayGames';
 
 
 function Sidebar({ isOpen, items, onClose }) {
@@ -115,6 +116,7 @@ function Sidebar({ isOpen, items, onClose }) {
                                : item.text.toLowerCase() === 'kyc' ? '/kyc'
                                : item.text.toLowerCase() === 'rules' ? '/rules'
                                : item.text.toLowerCase() === 'share' ? '/share'
+                               : item.text.toLowerCase() === 'play games' ? '/playgames'
                                : '#';
 
                     return (

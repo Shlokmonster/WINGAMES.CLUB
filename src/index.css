@@ -1045,3 +1045,130 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* Play Games Styles */
+.play-games-container {
+    padding: 2rem;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.betting-dashboard {
+    background: var(--background-light);
+    border-radius: 20px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--primary-gold);
+}
+
+.betting-dashboard h2 {
+    color: var(--primary-gold);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.bet-amounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.bet-amount-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: var(--background-darker);
+    border: 2px solid var(--primary-gold);
+    border-radius: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 0.5rem;
+}
+
+.bet-amount-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.bet-amount-btn.selected {
+    background: var(--primary-gold);
+    color: var(--text-dark);
+}
+
+.dice-icon {
+    font-size: 1.5rem;
+    color: var(--primary-gold);
+}
+
+.bet-amount-btn.selected .dice-icon {
+    color: var(--text-dark);
+}
+
+.selected-bet-info {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--primary-gold);
+}
+
+.selected-bet-info p {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.start-game-btn {
+    background: var(--primary-gold);
+    color: var(--text-dark);
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-game-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* Responsive adjustments for Play Games */
+@media (max-width: 768px) {
+    .play-games-container {
+        padding: 1rem;
+    }
+
+    .betting-dashboard {
+        padding: 1.5rem;
+    }
+
+    .bet-amounts-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .bet-amount-btn {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .bet-amounts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .betting-dashboard h2 {
+        font-size: 1.5rem;
+    }
+}

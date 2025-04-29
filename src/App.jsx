@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
-    FaHome, FaWallet, FaHistory,  FaShareAlt, FaBook, FaHeadset,
-    FaKeycdn,
+    FaHome, FaWallet, FaHistory, FaShareAlt, FaBook, FaHeadset,
+    FaKeycdn, FaDice,
 } from 'react-icons/fa';
 
 // Import Components
@@ -19,6 +19,7 @@ import Support from './Pages/Support';
 import KycPage from './Pages/Kyc';
 import RulesPage from './Pages/Rules';
 import SharePage from './Pages/Share';
+import PlayGames from './Pages/PlayGames';
 
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ function App() {
 
     const sidebarItemsData = [
         { icon: <FaHome />, text: 'Home' },
+        { icon: <FaDice />, text: 'Play Games' },
         { icon: <FaWallet />, text: 'Wallet' },
         { icon: <FaHistory />, text: 'History' },
         { icon: <FaKeycdn />, text: 'Kyc' },
@@ -59,6 +61,11 @@ function App() {
                         <Route path="/profile" element={
                             <ProtectedRoute>
                                 <Profile />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/playgames" element={
+                            <ProtectedRoute>
+                                <PlayGames />
                             </ProtectedRoute>
                         } />
                         <Route path="/support" element={<Support />} />
