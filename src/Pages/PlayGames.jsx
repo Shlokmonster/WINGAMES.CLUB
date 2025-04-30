@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const MATCHMAKING_TIMEOUT = 120000; // 120 seconds
+
 const PlayGames = () => {
     const [selectedAmount, setSelectedAmount] = useState(null);
     const [isMatchmaking, setIsMatchmaking] = useState(false);
@@ -20,7 +22,9 @@ const PlayGames = () => {
     const [showRoomInput, setShowRoomInput] = useState(false);
     const [error, setError] = useState('');
     const socketRef = useRef(null);
+    const matchmakingTimeoutRef = useRef(null);
     const navigate = useNavigate();
+    const [walletBalance, setWalletBalance] = useState(0);
     
     const betAmounts = [50, 100, 200, 500, 1000, 2000, 5000];
 
@@ -150,28 +154,58 @@ const PlayGames = () => {
         };
     }, [navigate]);
 
+    useEffect(() => {
+        if (!isMatchmaking && matchmakingTimeoutRef.current) {
+            clearTimeout(matchmakingTimeoutRef.current);
+        }
+    }, [isMatchmaking]);
+
+    useEffect(() => {
+        // Fetch wallet balance
+        const fetchWallet = async () => {
+            if (!user) return;
+            const { data, error } = await supabase
+                .from('wallets')
+                .select('balance')
+                .eq('user_id', user.id)
+                .single();
+            if (data) setWalletBalance(data.balance);
+        };
+        fetchWallet();
+    }, [user]);
+
     const handleAmountSelect = (amount) => {
         setSelectedAmount(amount);
     };
 
     const startMatchmaking = () => {
         if (!selectedAmount || !user || !username) return;
-        
+        if (selectedAmount > walletBalance) {
+            toast.error('Insufficient wallet balance for this bet.');
+            return;
+        }
         setIsMatchmaking(true);
         setMatchStatus('Searching for opponent...');
-        
-        // Join matchmaking queue
         socketRef.current.emit('joinMatchmaking', {
             userId: user.id,
             username,
             betAmount: selectedAmount
         });
+        // Start the 120s timer
+        if (matchmakingTimeoutRef.current) clearTimeout(matchmakingTimeoutRef.current);
+        matchmakingTimeoutRef.current = setTimeout(() => {
+            if (isMatchmaking) {
+                setIsMatchmaking(false);
+                setMatchStatus('');
+                toast.error('No player available for matching for the amount you have chosen.');
+            }
+        }, MATCHMAKING_TIMEOUT);
     };
 
     const cancelMatchmaking = () => {
         setIsMatchmaking(false);
         setMatchStatus('');
-        // The server will handle removing from queue on disconnect
+        if (matchmakingTimeoutRef.current) clearTimeout(matchmakingTimeoutRef.current);
     };
 
     const handleReady = () => {

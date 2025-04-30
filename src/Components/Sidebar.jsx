@@ -117,6 +117,8 @@ function Sidebar({ isOpen, items, onClose }) {
                                : item.text.toLowerCase() === 'rules' ? '/rules'
                                : item.text.toLowerCase() === 'share' ? '/share'
                                : item.text.toLowerCase() === 'play games' ? '/playgames'
+                               : item.text.toLowerCase() === 'wallet' ? '/wallet'
+                               : item.text.toLowerCase() === 'history' ? '/history'
                                : '#';
 
                     return (

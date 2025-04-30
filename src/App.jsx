@@ -20,6 +20,8 @@ import KycPage from './Pages/Kyc';
 import RulesPage from './Pages/Rules';
 import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
+import Wallet from './Pages/Wallet';
+import History from './Pages/History';
 
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -66,6 +68,16 @@ function App() {
                         <Route path="/playgames" element={
                             <ProtectedRoute>
                                 <PlayGames />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/wallet" element={
+                            <ProtectedRoute>
+                                <Wallet />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/history" element={
+                            <ProtectedRoute>
+                                <History />
                             </ProtectedRoute>
                         } />
                         <Route path="/support" element={<Support />} />
