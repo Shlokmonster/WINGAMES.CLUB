@@ -138,13 +138,28 @@ const PlayGames = () => {
         });
         
         socketRef.current.on('gameStart', (data) => {
-            console.log('Game starting:', data);
-            setMatchStatus('Both players ready! Game starting...');
-            toast.success('Both players ready! Game starting...');
+            console.log('Game starting with data:', data);
+            console.log('Current gameRoom state:', gameRoom);
             
-            // Navigate to game page after a short delay
+            setMatchStatus('Both players ready! Redirecting to match verification...');
+            toast.success('Both players ready! Please verify your match result.');
+            
+            // Get the latest game room data
+            const gameInfo = {
+                roomCode: data.roomCode || gameRoom?.roomCode,
+                betAmount: data.betAmount || gameRoom?.betAmount,
+                opponent: data.opponent?.username || gameRoom?.opponent?.username,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('Storing game info:', gameInfo);
+            localStorage.setItem('lastGameInfo', JSON.stringify(gameInfo));
+
+            // Navigate to match verification page after a short delay
+            console.log('Starting navigation timeout...');
             setTimeout(() => {
-                navigate(`/game/${data.gameId}`);
+                console.log('Executing navigation to match verification...');
+                navigate('/match-verification');
             }, 2000);
         });
         

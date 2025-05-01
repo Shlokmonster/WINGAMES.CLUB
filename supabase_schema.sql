@@ -31,6 +31,19 @@ CREATE TABLE IF NOT EXISTS game_moves (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- Create match_verifications table
+CREATE TABLE IF NOT EXISTS match_verifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    room_code TEXT NOT NULL,
+    screenshot_url TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+    submitted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    reviewer_notes TEXT,
+    FOREIGN KEY (room_code) REFERENCES games(room_code)
+);
+
 -- Create RLS policies for games table
 ALTER TABLE games ENABLE ROW LEVEL SECURITY;
 
@@ -84,6 +97,15 @@ CREATE POLICY "Game moves can be created by players" ON game_moves
     )
   );
 
+-- Create RLS policies for match_verifications table
+ALTER TABLE match_verifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own verifications" ON match_verifications
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own verifications" ON match_verifications
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -97,4 +119,18 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_games_updated_at
 BEFORE UPDATE ON games
 FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column(); 
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Create storage bucket for match screenshots
+INSERT INTO storage.buckets (id, name, public) VALUES ('match-screenshots', 'match-screenshots', true);
+
+-- Create storage policy for match screenshots
+CREATE POLICY "Users can upload their own screenshots" ON storage.objects
+    FOR INSERT WITH CHECK (
+        bucket_id = 'match-screenshots' AND
+        auth.role() = 'authenticated' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+    );
+
+CREATE POLICY "Anyone can view match screenshots" ON storage.objects
+    FOR SELECT USING (bucket_id = 'match-screenshots'); 

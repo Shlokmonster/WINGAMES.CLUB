@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaCamera } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PlayGames from '../Pages/PlayGames';
@@ -78,6 +78,12 @@ function Sidebar({ isOpen, items, onClose }) {
         onClose();
     };
 
+    // Add Match Verification to navigation items if user is authenticated
+    const getNavigationItems = () => {
+        const baseItems = items || [];
+        return baseItems;
+    };
+
     return (
         <nav className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
             <div className="sidebar-header">
@@ -110,33 +116,23 @@ function Sidebar({ isOpen, items, onClose }) {
                 </div>
             </div>
             <ul className="nav-list">
-                {items.map((item, index) => {
-                    const path = item.text.toLowerCase() === 'home' ? '/'
-                               : item.text.toLowerCase() === 'support' ? '/support'
-                               : item.text.toLowerCase() === 'kyc' ? '/kyc'
-                               : item.text.toLowerCase() === 'rules' ? '/rules'
-                               : item.text.toLowerCase() === 'share' ? '/share'
-                               : item.text.toLowerCase() === 'play games' ? '/playgames'
-                               : item.text.toLowerCase() === 'wallet' ? '/wallet'
-                               : item.text.toLowerCase() === 'history' ? '/history'
-                               : '#';
-
-                    return (
+                {getNavigationItems().map((item, index) => (
+                    (!item.requiresAuth || user) && (
                         <li key={index}>
-                            {path !== '#' ? (
-                                <Link to={path} onClick={handleLinkClick}>
+                            {item.to !== '#' ? (
+                                <Link to={item.to} onClick={handleLinkClick}>
                                     {item.icon}
                                     {item.text}
                                 </Link>
                             ) : (
-                                <a href={path} onClick={handleLinkClick}>
+                                <a href={item.to} onClick={handleLinkClick}>
                                     {item.icon}
                                     {item.text}
                                 </a>
                             )}
                         </li>
-                    );
-                })}
+                    )
+                ))}
                 {/* {user && (
                     <li>
                         <Link to="/profile" onClick={handleLinkClick}>

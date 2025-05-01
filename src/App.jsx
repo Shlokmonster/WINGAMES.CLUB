@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
     FaHome, FaWallet, FaHistory, FaShareAlt, FaBook, FaHeadset,
-    FaKeycdn, FaDice,
+    FaKeycdn, FaDice,FaCheck
 } from 'react-icons/fa';
 
 // Import Components
@@ -22,6 +22,8 @@ import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
 import Wallet from './Pages/Wallet';
 import History from './Pages/History';
+import { MatchVerification } from './Pages/Matchverfication';
+
 
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -35,14 +37,15 @@ function App() {
     };
 
     const sidebarItemsData = [
-        { icon: <FaHome />, text: 'Home' },
-        { icon: <FaDice />, text: 'Play Games' },
-        { icon: <FaWallet />, text: 'Wallet' },
-        { icon: <FaHistory />, text: 'History' },
-        { icon: <FaKeycdn />, text: 'Kyc' },
-        { icon: <FaShareAlt />, text: 'Share' },
-        { icon: <FaBook />, text: 'Rules' },
-        { icon: <FaHeadset />, text: 'Support' },
+        { to: '/', icon: <FaHome />, text: 'Home' },
+        { to: '/playgames', icon: <FaDice />, text: 'Play Games' },
+        { to: '/wallet', icon: <FaWallet />, text: 'Wallet' },
+        { to: '/history', icon: <FaHistory />, text: 'History' },
+        { to: '/kyc', icon: <FaKeycdn />, text: 'Kyc' },
+        { to: '/share', icon: <FaShareAlt />, text: 'Share' },
+        { to: '/rules', icon: <FaBook />, text: 'Rules' },
+        { to: '/support', icon: <FaHeadset />, text: 'Support' },
+        { to: '/match-verification', icon: <FaCheck />, text: 'Match Verification' },
     ];
 
     return (
@@ -88,6 +91,11 @@ function App() {
                         } />
                         <Route path="/rules" element={<RulesPage />} />
                         <Route path="/share" element={<SharePage />} />
+                        <Route path="/match-verification" element={
+                            <ProtectedRoute>
+                                <MatchVerification />
+                            </ProtectedRoute>
+                        } />
                     </Routes>
                 </main>
 

@@ -290,10 +290,18 @@ io.on('connection', (socket) => {
           }
 
           // Notify players that game is starting
-          io.to(gameId).emit('gameStart', {
+          const gameStartPayload = {
             message: 'Both players are ready! Game is starting...',
-            gameId: gameRoom.roomCode
-          });
+            gameId: gameRoom.roomCode,
+            roomCode: gameRoom.roomCode,
+            betAmount: gameRoom.betAmount,
+            opponent: {
+              username: gameRoom.players.find(p => p.socketId !== socket.id)?.username
+            }
+          };
+          console.log('Emitting gameStart with payload:', JSON.stringify(gameStartPayload));
+          io.to(gameId).emit('gameStart', gameStartPayload);
+          console.log('gameStart event emitted successfully');
         }
       }
     }

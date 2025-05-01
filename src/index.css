@@ -1894,3 +1894,201 @@ button {
   font-size: 0.95rem;
   padding: 0.2rem 0.1rem;
 }
+
+/* Match Verification Styles */
+.match-verification-container {
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: var(--background-dark);
+}
+
+.verification-card {
+    background: var(--background-darker);
+    border-radius: 15px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--dark-gold);
+}
+
+.verification-card h2 {
+    color: var(--primary-gold);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.verification-info {
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.verification-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.form-group input[type="text"] {
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--dark-gold);
+    border-radius: 8px;
+    background: var(--background-dark);
+    color: var(--text-light);
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+.form-group input[type="text"]:focus {
+    border-color: var(--primary-gold);
+    outline: none;
+}
+
+.file-upload-container {
+    position: relative;
+    width: 100%;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+    background: var(--background-dark);
+    border: 2px dashed var(--dark-gold);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary-gold);
+    background: var(--background-darker);
+}
+
+.upload-icon {
+    font-size: 1.2rem;
+    color: var(--primary-gold);
+}
+
+.screenshot-preview {
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--dark-gold);
+}
+
+.screenshot-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.submit-btn {
+    background: var(--primary-gold);
+    color: var(--text-dark);
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinner-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .match-verification-container {
+        padding: 1rem;
+    }
+
+    .verification-card {
+        padding: 1.5rem;
+    }
+
+    .verification-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .submit-btn {
+        padding: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .verification-card {
+        padding: 1rem;
+    }
+
+    .form-group input[type="text"] {
+        font-size: 0.9rem;
+    }
+
+    .file-upload-label {
+        font-size: 0.9rem;
+    }
+}
+
+.game-info {
+    background: var(--background-darker);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--dark-gold);
+}
+
+.game-info p {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.game-info p:last-child {
+    margin-bottom: 0;
+}
