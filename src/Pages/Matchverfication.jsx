@@ -83,6 +83,8 @@ export function MatchVerification() {
             setRoomCode('');
             setScreenshot(null);
             setPreviewUrl(null);
+            const fileInput = document.getElementById('screenshot');
+            if (fileInput) fileInput.value = '';
         } catch (error) {
             console.error('Error:', error);
             toast.error('Failed to submit verification. Please try again.');
@@ -113,7 +115,7 @@ export function MatchVerification() {
                         <input
                             type="text"
                             id="roomCode"
-                            value={roomCode}
+                            value={roomCode || ''}
                             onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                             placeholder="Enter room code"
                             maxLength={6}
