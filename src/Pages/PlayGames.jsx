@@ -74,7 +74,7 @@ const PlayGames = () => {
             
             setGameRoom({
                 opponent: data.opponent,
-                betAmount: data.betAmount
+                betAmount: data.betAmount || selectedAmount
             });
         });
         
@@ -83,13 +83,23 @@ const PlayGames = () => {
             toast.info(data.message);
             setGameRoom(prev => ({
                 ...prev,
-                roomCode: data.roomCode
+                roomCode: data.roomCode,
+                betAmount: prev.betAmount
             }));
         });
         
         socketRef.current.on('opponentJoined', (data) => {
             setMatchStatus(`Opponent ${data.opponent.username} has joined the room!`);
             toast.success(`Opponent ${data.opponent.username} has joined the room!`);
+            setGameRoom(prev => ({
+                ...prev,
+                opponent: data.opponent,
+                players: [
+                    { userId: user?.id, username: username },
+                    { userId: data.opponent.userId, username: data.opponent.username }
+                ],
+                betAmount: prev.betAmount
+            }));
         });
         
         socketRef.current.on('roomJoined', (data) => {
@@ -98,21 +108,43 @@ const PlayGames = () => {
             setGameRoom(prev => ({
                 ...prev,
                 roomCode: data.roomCode,
-                opponent: data.opponent
+                opponent: data.opponent,
+                players: [
+                    { userId: user?.id, username: username },
+                    { userId: data.opponent.userId, username: data.opponent.username }
+                ],
+                betAmount: prev.betAmount
             }));
         });
         
         socketRef.current.on('playerReadyUpdate', (data) => {
-            setOpponentReady(data.readyPlayers > 1);
+            console.log('Received playerReadyUpdate:', data);
+            // Update ready status based on the server response
+            if (data.readyStatus && user) {
+                const isPlayerReady = data.readyStatus[user.id] || false;
+                setIsReady(isPlayerReady);
+                
+                // Find opponent's ready status
+                const opponentId = gameRoom?.opponent?.userId;
+                if (opponentId) {
+                    const isOpponentReady = data.readyStatus[opponentId] || false;
+                    setOpponentReady(isOpponentReady);
+                    console.log('Ready status updated - You:', isPlayerReady, 'Opponent:', isOpponentReady);
+                }
+            }
+            
             setMatchStatus(`${data.readyPlayers} of ${data.totalPlayers} players ready`);
             toast.info(`${data.readyPlayers} of ${data.totalPlayers} players ready`);
         });
         
-        socketRef.current.on('gameStarting', (data) => {
-            setMatchStatus(data.message);
-            toast.success(data.message);
+        socketRef.current.on('gameStart', (data) => {
+            console.log('Game starting:', data);
+            setMatchStatus('Both players ready! Game starting...');
+            toast.success('Both players ready! Game starting...');
+            
+            // Navigate to game page after a short delay
             setTimeout(() => {
-                navigate('/');
+                navigate(`/game/${data.gameId}`);
             }, 2000);
         });
         
@@ -139,7 +171,8 @@ const PlayGames = () => {
             console.log('Received roomCodeAvailable:', data);
             setGameRoom(prev => ({
                 ...prev,
-                roomCode: data.roomCode
+                roomCode: data.roomCode,
+                betAmount: prev.betAmount
             }));
             setShowRoomInput(true);
             setMatchStatus(data.message);
@@ -217,13 +250,21 @@ const PlayGames = () => {
     
     const createRoomCode = () => {
         if (!gameRoom || !user || !username || !roomCode) return;
-        
+        console.log('EMIT createRoomCode:', {
+            userId: user.id,
+            username,
+            roomCode: roomCode.toUpperCase(),
+            opponentId: gameRoom.opponent.userId,
+            opponentSocketId: gameRoom.opponent.socketId,
+            betAmount: gameRoom.betAmount
+        });
         socketRef.current.emit('createRoomCode', {
             userId: user.id,
             username,
             roomCode: roomCode.toUpperCase(),
             opponentId: gameRoom.opponent.userId,
-            opponentSocketId: gameRoom.opponent.socketId
+            opponentSocketId: gameRoom.opponent.socketId,
+            betAmount: gameRoom.betAmount
         });
     };
     
@@ -343,6 +384,12 @@ const PlayGames = () => {
                         <button 
                             className="ready-btn"
                             onClick={handleReady}
+                            disabled={
+                                !gameRoom ||
+                                !gameRoom.players ||
+                                gameRoom.players.length < 2 ||
+                                isReady
+                            }
                         >
                             I'm Ready
                         </button>

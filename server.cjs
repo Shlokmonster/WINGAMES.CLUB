@@ -89,8 +89,10 @@ io.on('connection', (socket) => {
   });
 
   // Handle room code creation by the designated player
-  socket.on('createRoomCode', ({ userId, username, roomCode, opponentId, opponentSocketId }) => {
-    console.log(`Player ${username} created room code: ${roomCode}`);
+  socket.on('createRoomCode', (payload) => {
+    console.log('SERVER createRoomCode payload:', payload);
+    const { userId, username, roomCode, opponentId, opponentSocketId, betAmount } = payload;
+    console.log(`Player ${username} created room code: ${roomCode} with betAmount: ${betAmount}`);
     
     // Create a game room
     const gameId = `game_${roomCode}`;
@@ -98,6 +100,7 @@ io.on('connection', (socket) => {
     // Store game room info
     gameRooms.set(gameId, {
       roomCode,
+      betAmount: betAmount || 0, // Ensure betAmount is set
       players: [
         { userId, username, socketId: socket.id, ready: false, isCreator: true },
         { userId: opponentId, socketId: opponentSocketId, ready: false, isCreator: false }
@@ -137,10 +140,16 @@ io.on('connection', (socket) => {
       return;
     }
     
-    // Update opponent info
-    gameRoom.players[1].userId = userId;
-    gameRoom.players[1].username = username;
-    gameRoom.players[1].socketId = socket.id;
+    // Update opponent info and preserve all properties (including betAmount)
+    gameRooms.set(gameId, {
+      ...gameRoom,
+      players: [
+        gameRoom.players[0],
+        { userId, username, socketId: socket.id, ready: false, isCreator: false }
+      ]
+    });
+    // Log the updated gameRoom after join
+    console.log('After joinWithRoomCode, gameRoom:', JSON.stringify(gameRooms.get(gameId)));
     
     // Join the player to the socket room
     socket.join(gameId);
@@ -160,36 +169,130 @@ io.on('connection', (socket) => {
   });
 
   // Handle player ready status
-  socket.on('playerReady', ({ roomCode }) => {
+  socket.on('playerReady', async ({ roomCode }) => {
     const gameId = `game_${roomCode}`;
-    const gameRoom = gameRooms.get(gameId);
-    
+    let gameRoom = gameRooms.get(gameId);
+
+    console.log('Initial gameRoom state:', JSON.stringify(gameRoom));
+
     if (gameRoom) {
       // Update player ready status
       const playerIndex = gameRoom.players.findIndex(p => p.socketId === socket.id);
       if (playerIndex !== -1) {
+        // Update the player's ready status
         gameRoom.players[playerIndex].ready = true;
-        
+        // Save the updated gameRoom back to the Map
+        gameRooms.set(gameId, gameRoom);
+
+        // Re-fetch the latest gameRoom
+        gameRoom = gameRooms.get(gameId);
+        console.log('Updated gameRoom after ready:', JSON.stringify(gameRoom));
+
         // Check if both players are ready
         const allPlayersReady = gameRoom.players.every(p => p.ready);
-        
+        console.log('All players ready:', allPlayersReady);
+
+        // Always emit the current ready status
+        io.to(gameId).emit('playerReadyUpdate', {
+          readyPlayers: gameRoom.players.filter(p => p.ready).length,
+          totalPlayers: gameRoom.players.length,
+          readyStatus: {
+            [gameRoom.players[0].userId]: gameRoom.players[0].ready,
+            [gameRoom.players[1].userId]: gameRoom.players[1].ready
+          }
+        });
+
         if (allPlayersReady) {
-          // Both players are ready, update game status
+          console.log('Both players ready, starting game process');
+          // Set game status to active
           gameRoom.status = 'active';
-          
+          gameRooms.set(gameId, gameRoom);
+
+          // Process wallet deductions and transactions
+          for (const player of gameRoom.players) {
+            try {
+              console.log(`Processing deduction for player ${player.username}`);
+              // 1. Fetch current wallet balance
+              const { data: wallet, error: walletError } = await supabase
+                .from('wallets')
+                .select('balance')
+                .eq('user_id', player.userId)
+                .single();
+
+              if (walletError) {
+                console.error('Wallet fetch error:', walletError);
+                continue;
+              }
+
+              // 2. Calculate new balance
+              const newBalance = wallet.balance - gameRoom.betAmount;
+              console.log(`New balance for ${player.username}: ${newBalance}`);
+
+              // 3. Update wallet
+              const { error: updateError } = await supabase
+                .from('wallets')
+                .update({ balance: newBalance })
+                .eq('user_id', player.userId);
+
+              if (updateError) {
+                console.error('Wallet update error:', updateError);
+                continue;
+              }
+
+              // 4. Log transaction
+              const { error: txError } = await supabase
+                .from('wallet_transactions')
+                .insert([{
+                  user_id: player.userId,
+                  type: 'bet',
+                  amount: gameRoom.betAmount,
+                  balance_after: newBalance,
+                  description: `Bet placed for game room ${gameRoom.roomCode}`,
+                  status: 'completed'
+                }]);
+
+              if (txError) {
+                console.error('Transaction log error:', txError);
+                continue;
+              }
+
+              console.log(`Successfully processed deduction for ${player.username}`);
+            } catch (error) {
+              console.error(`Error processing player ${player.username}:`, error);
+            }
+          }
+
           // Store game in Supabase
-          storeGameInSupabase(gameRoom);
-          
+          try {
+            const { error: gameError } = await supabase
+              .from('games')
+              .insert([{
+                room_code: gameRoom.roomCode,
+                bet_amount: gameRoom.betAmount,
+                status: 'active',
+                created_at: gameRoom.createdAt,
+                game_type: 'ludo',
+                game_data: {
+                  players: gameRoom.players.map(p => ({
+                    user_id: p.userId,
+                    username: p.username
+                  }))
+                }
+              }]);
+
+            if (gameError) {
+              console.error('Game storage error:', gameError);
+            } else {
+              console.log('Game successfully stored in Supabase');
+            }
+          } catch (error) {
+            console.error('Error storing game:', error);
+          }
+
           // Notify players that game is starting
-          io.to(gameId).emit('gameStarting', { 
+          io.to(gameId).emit('gameStart', {
             message: 'Both players are ready! Game is starting...',
             gameId: gameRoom.roomCode
-          });
-        } else {
-          // Notify players that one player is ready
-          io.to(gameId).emit('playerReadyUpdate', { 
-            readyPlayers: gameRoom.players.filter(p => p.ready).length,
-            totalPlayers: gameRoom.players.length
           });
         }
       }
@@ -233,6 +336,8 @@ io.on('connection', (socket) => {
 // Store game in Supabase
 async function storeGameInSupabase(gameRoom) {
   try {
+    // Log the full gameRoom received
+    console.log('storeGameInSupabase received gameRoom:', JSON.stringify(gameRoom));
     // Check if we have valid Supabase credentials
     if (!supabaseUrl || supabaseUrl === 'https://your-supabase-url.supabase.co' || 
         !supabaseKey || supabaseKey === 'your-supabase-key') {
