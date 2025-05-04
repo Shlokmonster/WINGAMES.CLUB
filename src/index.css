@@ -37,14 +37,13 @@ body {
 
 .main-content {
   flex: 1;
-  transition: margin-left 0.3s ease;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  transition: none; /* Remove transition since we're not moving the content */
 }
 
 .main-content.sidebar-open {
-  margin-left: 250px;
+  margin-left: 0;
 }
 
 /* Auth Styles */
@@ -122,6 +121,8 @@ body {
 .input-icon {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .input-icon .icon {
@@ -131,6 +132,15 @@ body {
   transform: translateY(-50%);
   color: var(--primary-gold);
   font-size: clamp(1rem, 2.5vw, 1.2rem);
+  z-index: 1;
+}
+
+.input-icon input::placeholder,
+.input-with-icon input::placeholder {
+  color: #666;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  text-transform: capitalize; /* Ensures consistent casing */
+  letter-spacing: 0.5px;
 }
 
 .input-icon input,
@@ -143,6 +153,31 @@ body {
   color: var(--text-light);
   font-size: clamp(0.875rem, 2vw, 1rem);
   transition: all 0.3s ease;
+}
+
+/* Ensure placeholder text is properly aligned with icon */
+.input-icon input::-webkit-input-placeholder,
+.input-with-icon input::-webkit-input-placeholder {
+  line-height: normal;
+  vertical-align: middle;
+}
+
+.input-icon input::-moz-placeholder,
+.input-with-icon input::-moz-placeholder {
+  line-height: normal;
+  vertical-align: middle;
+}
+
+.input-icon input:-ms-input-placeholder,
+.input-with-icon input:-ms-input-placeholder {
+  line-height: normal;
+  vertical-align: middle;
+}
+
+.input-icon input::-ms-input-placeholder,
+.input-with-icon input::-ms-input-placeholder {
+  line-height: normal;
+  vertical-align: middle;
 }
 
 .input-icon input:focus,
@@ -290,13 +325,14 @@ body {
 .sidebar {
   position: fixed;
   top: 0;
-  left: -250px;
-  width: 250px;
+  left: -280px;
+  width: 280px;
   height: 100vh;
-  background-color: var(--background-light);
+  background-color: #1a1a1a;
   transition: left 0.3s ease;
   z-index: 1000;
   overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar.open {
@@ -305,74 +341,139 @@ body {
 
 .sidebar-header {
   padding: 20px 15px;
-  text-align: center;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #333;
   margin-bottom: 20px;
+}
+
+.profile-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.profile-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.profile-link:hover {
+  background-color: #222;
+}
+
+.profile-link span {
+  color: var(--primary-gold);
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .nav-list {
   list-style: none;
-  padding: 1rem 0;
+  padding: 0;
+  margin: 0;
 }
 
-.nav-list li a,
-.nav-list li button {
+.nav-list li {
+  margin: 5px 10px;
+}
+
+.nav-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 12px;
+  padding: 12px 15px;
   color: var(--text-light);
-  text-decoration: none;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-.nav-list li a:hover,
-.nav-list li button:hover {
-  background-color: var(--background-darker);
+.nav-item:hover {
+  background-color: #222;
   color: var(--primary-gold);
 }
 
-/* Responsive Breakpoints */
+.nav-item.active {
+  background-color: #222;
+  color: var(--primary-gold);
+  border-left: 3px solid var(--primary-gold);
+}
+
+.nav-item svg {
+  font-size: 1.2rem;
+  min-width: 20px;
+}
+
+.nav-item span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.sign-out-button {
+  color: #ff4d4d;
+  margin-top: 20px;
+  border-top: 1px solid #333;
+  border-radius: 0;
+}
+
+.sign-out-button:hover {
+  background-color: #ff4d4d;
+  color: var(--text-light);
+}
+
+/* Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+}
+
+.sidebar.open + .sidebar-overlay {
+  display: block;
+}
+
+/* Mobile Adjustments */
 @media (max-width: 768px) {
-  .main-content.sidebar-open {
-    margin-left: 0;
-  }
-
   .sidebar {
-    width: 100%;
-    left: -100%;
+    width: 260px;
+    left: -260px;
   }
 
-  .sidebar.open {
-    left: 0;
+  .nav-item {
+    padding: 10px 12px;
   }
 
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .auth-box,
-  .profile-box {
-    padding: clamp(1rem, 3vw, 1.5rem);
+  .profile-link span {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .auth-box,
-  .profile-box {
-    width: 95%;
+  .sidebar {
+    width: 240px;
+    left: -240px;
   }
 
-  .input-icon input,
-  .input-with-icon input {
-    font-size: 16px; /* Prevents zoom on mobile */
+  .nav-item {
+    padding: 8px 10px;
   }
 
-  .button,
-  .logout-button {
-    width: 100%;
-    justify-content: center;
+  .nav-item svg {
+    font-size: 1.1rem;
+  }
+
+  .nav-item span {
+    font-size: 0.9rem;
   }
 }
 
@@ -531,7 +632,7 @@ button {
     padding: 0; /* Remove padding to make header full width */
     background-color: #000;
     margin-left: 0; /* Default state */
-    transition: margin-left 0.3s ease;
+    transition: none; /* Remove transition since we're not moving the content */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -2092,3 +2193,160 @@ button {
 .game-info p:last-child {
     margin-bottom: 0;
 }
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--background-darker);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.menu-btn:hover {
+    color: var(--primary-gold);
+}
+
+.logo-text h1 {
+    color: var(--primary-gold);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    background: linear-gradient(to right, var(--primary-gold), var(--secondary-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Wallet Balance Display */
+.wallet-balance {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(26, 26, 26, 0.8));
+    border-radius: 30px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.wallet-balance::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #FFD700, #00FF00, #FFD700);
+    border-radius: 32px;
+    z-index: -1;
+    animation: borderAnimation 3s linear infinite;
+}
+
+@keyframes borderAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.wallet-balance:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.wallet-icon {
+    color: var(--primary-gold);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.wallet-label {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wallet-amount {
+    font-size: 1rem;
+    color: var(--primary-gold);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.6rem 1rem;
+    }
+    .wallet-balance {
+        padding: 0.4rem 0.8rem;
+    }
+    .wallet-icon {
+        font-size: 1rem;
+    }
+    .wallet-label {
+        font-size: 0.7rem;
+    }
+    .wallet-amount {
+        font-size: 0.9rem;
+    }
+    .logo-text h1 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0.5rem 0.8rem;
+    }
+    .wallet-balance {
+        padding: 0.3rem 0.6rem;
+    }
+    .wallet-info {
+        font-size: 0.8rem;
+    }
+    .logo-text h1 {
+        font-size: 1.1rem;
+    }
+}
+

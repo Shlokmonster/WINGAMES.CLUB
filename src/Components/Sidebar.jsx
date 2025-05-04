@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaUserCircle, FaCamera } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PlayGames from '../Pages/PlayGames';
-
 
 function Sidebar({ isOpen, items, onClose }) {
     const [user, setUser] = useState(null);
     const [username, setUsername] = useState('');
     const [avatarUrl, setAvatarUrl] = useState(null);
     const [loading, setLoading] = useState(true);
+    const sidebarRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // Get initial session
@@ -30,8 +31,26 @@ function Sidebar({ isOpen, items, onClose }) {
             }
         });
 
-        return () => subscription.unsubscribe();
-    }, []);
+        // Handle click outside
+        const handleClickOutside = (event) => {
+            if (sidebarRef.current && 
+                !sidebarRef.current.contains(event.target) && 
+                !event.target.closest('#menu-btn') && // Don't close if clicking menu button
+                isOpen) {
+                onClose();
+            }
+        };
+
+        // Add event listener
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            subscription.unsubscribe();
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isOpen, onClose]);
 
     const getUserProfile = async (userId) => {
         try {
@@ -39,25 +58,11 @@ function Sidebar({ isOpen, items, onClose }) {
                 .from('profiles')
                 .select('username, avatar_url')
                 .eq('id', userId)
-                .maybeSingle();
+                .single();
 
             if (error) throw error;
-            if (data) {
-                setUsername(data.username);
-                setAvatarUrl(data.avatar_url);
-            } else {
-                // If no profile exists, create one
-                const { error: insertError } = await supabase
-                    .from('profiles')
-                    .insert([
-                        {
-                            id: userId,
-                            username: '',
-                            updated_at: new Date(),
-                        }
-                    ]);
-                if (insertError) throw insertError;
-            }
+            setUsername(data?.username || '');
+            setAvatarUrl(data?.avatar_url);
         } catch (error) {
             console.error('Error fetching user profile:', error.message);
         }
@@ -74,83 +79,82 @@ function Sidebar({ isOpen, items, onClose }) {
         }
     };
 
-    const handleLinkClick = () => {
+    const handleNavigation = (to) => {
+        navigate(to);
         onClose();
     };
 
-    // Add Match Verification to navigation items if user is authenticated
-    const getNavigationItems = () => {
-        const baseItems = items || [];
-        return baseItems;
-    };
-
     return (
-        <nav className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
-            <div className="sidebar-header">
-                <div className="profile-placeholder">
-                    {user ? (
-                        <Link to="/profile" className="profile-link" onClick={handleLinkClick}>
-                            {avatarUrl ? (
-                                <img 
-                                    src={avatarUrl} 
-                                    alt={username || 'User avatar'} 
-                                    className="user-avatar"
-                                    style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        objectFit: 'cover'
-                                    }}
-                                />
-                            ) : (
+        <>
+            <nav ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
+                <div className="sidebar-header">
+                    <div className="profile-placeholder">
+                        {user ? (
+                            <div 
+                                className="profile-link" 
+                                onClick={() => handleNavigation('/profile')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {avatarUrl ? (
+                                    <img 
+                                        src={avatarUrl} 
+                                        alt={username || 'User avatar'} 
+                                        className="user-avatar"
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            objectFit: 'cover'
+                                        }}
+                                    />
+                                ) : (
+                                    <FaUserCircle size={40} />
+                                )}
+                                <span>{username || 'Loading...'}</span>
+                            </div>
+                        ) : (
+                            <div 
+                                className="profile-link" 
+                                onClick={() => handleNavigation('/auth')}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <FaUserCircle size={40} />
-                            )}
-                            <span>{username || 'Loading...'}</span>
-                        </Link>
-                    ) : (
-                        <Link to="/auth" className="profile-link" onClick={handleLinkClick}>
-                            <FaUserCircle size={40} />
-                            <span>Sign In</span>
-                        </Link>
-                    )}
+                                <span>Sign In</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-            <ul className="nav-list">
-                {getNavigationItems().map((item, index) => (
-                    (!item.requiresAuth || user) && (
-                        <li key={index}>
-                            {item.to !== '#' ? (
-                                <Link to={item.to} onClick={handleLinkClick}>
+                <ul className="nav-list">
+                    {items.map((item, index) => (
+                        (!item.requiresAuth || user) && (
+                            <li key={index}>
+                                <div
+                                    className={`nav-item ${location.pathname === item.to ? 'active' : ''}`}
+                                    onClick={() => handleNavigation(item.to)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     {item.icon}
-                                    {item.text}
-                                </Link>
-                            ) : (
-                                <a href={item.to} onClick={handleLinkClick}>
-                                    {item.icon}
-                                    {item.text}
-                                </a>
-                            )}
+                                    <span>{item.text}</span>
+                                </div>
+                            </li>
+                        )
+                    ))}
+                    {user && (
+                        <li>
+                            <div
+                                className="nav-item sign-out-button"
+                                onClick={handleSignOut}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <FaUserCircle />
+                                <span>Sign Out</span>
+                            </div>
                         </li>
-                    )
-                ))}
-                {/* {user && (
-                    <li>
-                        <Link to="/profile" onClick={handleLinkClick}>
-                            <FaUserCircle />
-                            Profile
-                        </Link>
-                    </li>
-                )} */}
-                {user && (
-                    <li>
-                        <button onClick={handleSignOut} className="sign-out-button">
-                            <FaUserCircle />
-                            Sign Out
-                        </button>
-                    </li>
-                )}
-            </ul>
-        </nav>
+                    )}
+                </ul>
+            </nav>
+            {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
+        </>
     );
 }
 

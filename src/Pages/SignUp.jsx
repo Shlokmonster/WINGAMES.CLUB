@@ -29,7 +29,7 @@ const SignUpPage = () => {
                             borderRadius: '4px',
                             border: '1px solid #444',
                             backgroundColor: '#333',
-                            color: 'white'
+                            color: 'white',
                         }}
                     />
                     <input
