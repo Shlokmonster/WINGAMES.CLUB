@@ -9,72 +9,73 @@ const Navbar = ({ toggleSidebar }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Check and set up auth state listener
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                fetchWalletBalance(session.user.id);
+            } else {
+                setWalletBalance(0);
+            }
+        });
+
         // Initial fetch
-        fetchWalletBalance();
-
-        // Set up real-time subscription
-        const walletSubscription = supabase
-            .channel('wallet_changes')
-            .on('postgres_changes', 
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'wallets'
-                },
-                (payload) => {
-                    if (payload.new) {
-                        setWalletBalance(payload.new.balance);
-                    }
-                }
-            )
-            .subscribe();
-
-        // Cleanup subscription
-        return () => {
-            walletSubscription.unsubscribe();
-        };
+        checkSessionAndFetchWallet();
     }, []);
 
-    const fetchWalletBalance = async () => {
+    const checkSessionAndFetchWallet = async () => {
+        try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError) {
+                console.error('Session error:', sessionError.message);
+                return;
+            }
+
+            if (session?.user) {
+                await fetchWalletBalance(session.user.id);
+            } else {
+                console.log('No active session');
+                setWalletBalance(0);
+            }
+        } catch (error) {
+            console.error('Error checking session:', error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchWalletBalance = async (userId) => {
         try {
             setIsLoading(true);
-            const { data: { session } } = await supabase.auth.getSession();
             
-            if (!session) {
-                console.log('No active session');
-                setIsLoading(false);
-                return;
-            }
-
-            const { data: walletData, error } = await supabase
+            // First try to get existing wallet
+            let { data: wallet, error } = await supabase
                 .from('wallets')
                 .select('balance')
-                .eq('user_id', session.user.id)
+                .eq('user_id', userId)
                 .single();
 
-            if (error) {
-                console.error('Error fetching wallet:', error.message);
-                return;
-            }
-
-            if (walletData) {
-                setWalletBalance(walletData.balance);
-            } else {
-                // Create a wallet if it doesn't exist
+            if (error && error.code === 'PGRST116') {
+                // Wallet doesn't exist, create one
                 const { data: newWallet, error: createError } = await supabase
                     .from('wallets')
-                    .insert([
-                        { user_id: session.user.id, balance: 0 }
-                    ])
+                    .insert([{ user_id: userId, balance: 0 }])
                     .select()
                     .single();
 
-                if (!createError && newWallet) {
-                    setWalletBalance(newWallet.balance);
+                if (createError) {
+                    throw createError;
                 }
+
+                wallet = newWallet;
+            } else if (error) {
+                throw error;
             }
+
+            setWalletBalance(wallet?.balance || 0);
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error fetching/creating wallet:', error.message);
+            setWalletBalance(0);
         } finally {
             setIsLoading(false);
         }
