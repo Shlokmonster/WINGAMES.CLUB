@@ -30,6 +30,7 @@ const SignUpPage = () => {
                             border: '1px solid #444',
                             backgroundColor: '#333',
                             color: 'white',
+                            textIndent:"10px"
                         }}
                     />
                     <input

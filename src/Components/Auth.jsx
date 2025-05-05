@@ -99,6 +99,7 @@ export default function Auth() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Username"
                   required
+                  style={{textIndent:"15px"}}
                 />
               </div>
             </div>
