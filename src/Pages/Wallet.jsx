@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { FaWallet, FaHistory } from 'react-icons/fa';
+import scanner  from "../assets/scanner.jpeg"
 import { useNavigate } from 'react-router-dom';
 
 const TABS = ['wallet', 'deposit', 'withdraw'];
@@ -64,8 +65,8 @@ const Wallet = () => {
 };
 
 // ----------------- Deposit Form -----------------
-const UPI_ID = 'wingames@okaxis'; // Your UPI ID
-const QR_IMAGE_URL = '/your-qr-image.png'; // Place your QR image in public folder
+const UPI_ID = '2004sharmamohiit0123@gmail.com'; // Your UPI ID
+const QR_IMAGE_URL = scanner; // Place your QR image in public folder
 
 const DepositForm = ({ user, onSuccess }) => {
   const [amount, setAmount] = useState('');
@@ -75,8 +76,16 @@ const DepositForm = ({ user, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleProofChange = (e) => setProof(e.target.files[0]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(UPI_ID);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 1500);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -192,8 +201,50 @@ const DepositForm = ({ user, onSuccess }) => {
         {loading ? 'Submitting...' : 'Submit Deposit Request'}
       </button>
       <div className="deposit-qr-section">
-        <img src={QR_IMAGE_URL} alt="UPI QR" className="deposit-qr-img" />
-        <div className="deposit-qr-upi">UPI ID: <b>{UPI_ID}</b></div>
+        <img
+          src={QR_IMAGE_URL}
+          alt="UPI QR"
+          className="deposit-qr-img"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setShowQRModal(true)}
+        />
+        <div 
+          className="deposit-qr-upi"
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            marginTop: '10px',
+            flexWrap: 'wrap',
+            wordBreak: 'break-all',
+            fontSize: '1rem',
+            width: '100%',
+            justifyContent: 'flex-start',
+            rowGap: '6px',
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-all' }}>UPI ID: <b>{UPI_ID}</b></span>
+          <button 
+            type="button" 
+            onClick={handleCopy} 
+            style={{ 
+              marginLeft: 0, 
+              padding: '2px 12px', 
+              borderRadius: 4, 
+              border: 'none', 
+              background: '#FFD700', 
+              color: '#222', 
+              cursor: 'pointer', 
+              fontWeight: 600,
+              fontSize: '0.98em',
+              minWidth: 60,
+              marginTop: 2
+            }}
+          >
+            Copy
+          </button>
+          {copySuccess && <span style={{ color: 'green', fontSize: '0.95em', minWidth: 60 }}>Copied!</span>}
+        </div>
         <div className="deposit-instructions">
           <b>Payment Instructions:</b>
           <ol>
@@ -205,6 +256,48 @@ const DepositForm = ({ user, onSuccess }) => {
           </ol>
         </div>
       </div>
+      {/* Modal for QR image */}
+      {showQRModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+          onClick={() => setShowQRModal(false)}
+        >
+          <div style={{ position: 'relative', background: '#222', padding: 24, borderRadius: 12 }} onClick={e => e.stopPropagation()}>
+            <img src={QR_IMAGE_URL} alt="UPI QR Large" style={{ maxWidth: '80vw', maxHeight: '80vh', borderRadius: 8 }} />
+            <button
+              onClick={() => setShowQRModal(false)}
+              style={{ position: 'absolute', top: 8, right: 8, background: '#FFD700', color: '#222', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      <style>{`
+@media (max-width: 600px) {
+  .deposit-qr-upi {
+    font-size: 0.95em !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .deposit-qr-upi button {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+  }
+}
+`}</style>
     </form>
   );
 };
