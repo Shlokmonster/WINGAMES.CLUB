@@ -8,7 +8,7 @@ import {
 
 
 const SharePage = () => {
-  const shareUrl = 'https://yourwebsite.com';
+  const shareUrl = 'wingames.club';
 
   const copyShareLink = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -18,7 +18,7 @@ const SharePage = () => {
 
   return (
     <div className="share-grid">
-      <div className="share-card whatsapp" onClick={() => window.open(`https://wa.me/?text=Check this out: ${encodeURIComponent(shareUrl)}`, '_blank')}>
+      <div className="share-card whatsapp" onClick={() => window.open(`https://wa.me/+91 98765 43210?text=Check this out: ${encodeURIComponent(shareUrl)}`, '_blank')}>
         <FaWhatsapp size={50} />
         <p>WhatsApp</p>
       </div>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaDice, FaSpinner } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { supabase } from '../lib/supabase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { socket } from '../lib/socket';
 
 const MATCHMAKING_TIMEOUT = 120000; // 120 seconds
 
@@ -25,6 +25,7 @@ const PlayGames = () => {
     const matchmakingTimeoutRef = useRef(null);
     const navigate = useNavigate();
     const [walletBalance, setWalletBalance] = useState(0);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     
     const betAmounts = [50, 100, 200, 500, 1000, 2000, 5000];
 
@@ -51,7 +52,7 @@ const PlayGames = () => {
         getCurrentUser();
         
         // Initialize Socket.IO connection
-        socketRef.current = socket;
+        socketRef.current = io('http://localhost:3001');
         
         // Socket event listeners
         socketRef.current.on('waitingForMatch', (data) => {

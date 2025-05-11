@@ -13,12 +13,6 @@ const RulesPage = () => {
           <li>First to bring all 4 tokens to Home wins.</li>
           <li>Extra turn on 6 or a capture.</li>
         </ul>
-        <h3>Snakes & Ladders</h3>
-        <ul>
-          <li>Roll and move forward.</li>
-          <li>Climb ladders, avoid snakes.</li>
-          <li>Exactly reach square 100 to win.</li>
-        </ul>
       </div>
 
       <div className="rules-box">

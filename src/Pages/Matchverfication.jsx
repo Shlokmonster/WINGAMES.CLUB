@@ -143,7 +143,6 @@ export function MatchVerification() {
                             </div>
                         )}
                     </div>
-
                     <button 
                         type="submit" 
                         className="submit-btn" 

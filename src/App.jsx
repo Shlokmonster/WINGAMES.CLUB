@@ -22,6 +22,7 @@ import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
 import Wallet from './Pages/Wallet';
 import History from './Pages/History';
+import AboutUs from './Pages/Aboutus';
 import { MatchVerification } from './Pages/Matchverfication';
 
 
@@ -96,6 +97,7 @@ function App() {
                                 <MatchVerification />
                             </ProtectedRoute>
                         } />
+                        <Route path="/about" element={<AboutUs />} />
                     </Routes>
                 </main>
 

@@ -44,6 +44,32 @@ const waitingPlayers = new Map();
 // Store active game rooms
 const gameRooms = new Map();
 
+// Remove in-memory arrays; use Redis for persistence
+// Redis keys: 'openBattles', 'runningBattles' (as hashes)
+
+// Helper functions for Redis CRUD
+async function addOpenBattle(battle) {
+  await redisClient.hSet('openBattles', battle.id, JSON.stringify(battle));
+}
+async function getAllOpenBattles() {
+  const all = await redisClient.hGetAll('openBattles');
+  return Object.values(all).map(val => JSON.parse(val));
+}
+async function removeOpenBattle(battleId) {
+  await redisClient.hDel('openBattles', battleId);
+}
+async function addRunningBattle(battle) {
+  await redisClient.hSet('runningBattles', battle.id, JSON.stringify(battle));
+}
+async function getAllRunningBattles() {
+  const all = await redisClient.hGetAll('runningBattles');
+  return Object.values(all).map(val => JSON.parse(val));
+}
+async function removeRunningBattle(battleId) {
+  await redisClient.hDel('runningBattles', battleId);
+}
+
+
 // Generate a random room code
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -51,6 +77,101 @@ function generateRoomCode() {
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
+  // --- CREATE BATTLE ---
+  socket.on('createBattle', async ({ userId, username, entryFee, comment }) => {
+    // Check creator's wallet balance
+    const { data: wallet, error: walletError } = await supabase
+      .from('wallets')
+      .select('balance')
+      .eq('user_id', userId)
+      .single();
+    if (walletError || !wallet || wallet.balance < entryFee) {
+      socket.emit('battleJoinError', { message: 'Insufficient wallet balance to create this battle.' });
+      return;
+    }
+    const battleId = generateRoomCode();
+    const battle = {
+      id: battleId,
+      creator: { userId, username, socketId: socket.id },
+      entryFee,
+      prize: Math.floor(entryFee * 1.95), // e.g. 5% fee
+      comment,
+      status: 'open',
+      createdAt: new Date().toISOString(),
+    };
+    await addOpenBattle(battle);
+    const openBattles = await getAllOpenBattles();
+    socket.emit('battleCreated', { battle });
+    io.emit('openBattlesUpdate', { openBattles });
+  });
+
+  // --- GET OPEN BATTLES ---
+  socket.on('getOpenBattles', async () => {
+    const openBattles = await getAllOpenBattles();
+    socket.emit('openBattlesUpdate', { openBattles });
+  });
+
+  // --- JOIN BATTLE ---
+  socket.on('joinBattle', async ({ battleId, userId, username }) => {
+    const openBattles = await getAllOpenBattles();
+    const battle = openBattles.find(b => b.id === battleId && b.status === 'open');
+    if (!battle) {
+      socket.emit('battleJoinError', { message: 'Battle not found or already joined.' });
+      return;
+    }
+    // Check both joiner's and creator's wallet balances
+    const [{ data: joinerWallet, error: joinerWalletError }, { data: creatorWallet, error: creatorWalletError }] = await Promise.all([
+      supabase.from('wallets').select('balance').eq('user_id', userId).single(),
+      supabase.from('wallets').select('balance').eq('user_id', battle.creator.userId).single()
+    ]);
+    if (joinerWalletError || !joinerWallet || joinerWallet.balance < battle.entryFee) {
+      socket.emit('battleJoinError', { message: 'You do not have enough balance to join this battle.' });
+      return;
+    }
+    if (creatorWalletError || !creatorWallet || creatorWallet.balance < battle.entryFee) {
+      socket.emit('battleJoinError', { message: 'Creator does not have enough balance. Battle is invalid.' });
+      // Optionally, auto-remove the battle
+      await removeOpenBattle(battleId);
+      const newOpenBattles = await getAllOpenBattles();
+      io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+      return;
+    }
+    // Update battle status and opponent
+    battle.status = 'matched';
+    battle.opponent = { userId, username, socketId: socket.id };
+    const runningBattle = {
+      ...battle,
+      status: 'running',
+      startedAt: new Date().toISOString(),
+    };
+    await addRunningBattle(runningBattle);
+    await removeOpenBattle(battleId);
+    const newOpenBattles = await getAllOpenBattles();
+    const runningBattles = await getAllRunningBattles();
+    io.to(battle.creator.socketId).emit('battleMatched', { battle: runningBattle });
+    io.to(socket.id).emit('battleMatched', { battle: runningBattle });
+    io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+    io.emit('runningBattlesUpdate', { runningBattles });
+  });
+
+  // --- DELETE BATTLE ---
+  socket.on('deleteBattle', async ({ battleId, userId }) => {
+    const openBattles = await getAllOpenBattles();
+    const battle = openBattles.find(b => b.id === battleId && b.creator.userId === userId);
+    if (battle) {
+      await removeOpenBattle(battleId);
+      const newOpenBattles = await getAllOpenBattles();
+      socket.emit('battleDeleted', { battleId });
+      io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+    }
+  });
+
+  // --- GET RUNNING BATTLES ---
+  socket.on('getRunningBattles', async () => {
+    const runningBattles = await getAllRunningBattles();
+    socket.emit('runningBattlesUpdate', { runningBattles });
+  });
+
   console.log(`User connected: ${socket.id}`);
 
   // Handle player joining the matchmaking queue
@@ -309,6 +430,19 @@ io.on('connection', (socket) => {
 
   // Handle player disconnection
   socket.on('disconnect', () => {
+    // Remove from open battles if creator disconnects
+    (async () => {
+      const openBattles = await getAllOpenBattles();
+      for (const battle of openBattles) {
+        if (battle.creator.socketId === socket.id) {
+          await removeOpenBattle(battle.id);
+        }
+      }
+      const newOpenBattles = await getAllOpenBattles();
+      io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+    })();
+    // Remove from running battles if needed (optional, can add logic)
+
     console.log(`User disconnected: ${socket.id}`);
     
     // Remove from waiting queue if applicable

@@ -1421,10 +1421,135 @@ button {
     letter-spacing: 2px;
 }
 
-.room-actions {
+.create-battle-section {
+    margin-bottom: 30px;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.create-battle-header {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.create-battle-form {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Battle sections headers */
+.battles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.battles-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    margin: 0;
+}
+
+.rules-button {
+    background-color: transparent;
+    border: none;
+    color: #00ff00;
+    font-size: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 5px;
+}
+
+/* Battle cards */
+.battle-card {
+    background-color: #000000;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    position: relative;
+    border: 2px solid transparent;
+    background-image: linear-gradient(#000, #000), 
+                      linear-gradient(90deg, #00ff00, #00ffff, #ff00ff, #ffff00);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.challenge-header {
+    background-color: #000000;
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+}
+
+.challenge-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+}
+
+.challenge-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fee-label, .prize-label {
+    font-size: 16px;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+.fee-amount, .prize-amount {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.currency-icon {
+    color: #ffcc00;
+    font-size: 24px;
+    margin-right: 5px;
+}
+
+.play-button {
+    background-color: #00cc00;
+    color: var(--text-dark);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.play-button:hover {
+    background-color: #00ff00;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
 }
 
 .create-room-btn, .join-room-btn, .back-btn {
@@ -2350,3 +2475,199 @@ button {
     }
 }
 
+/*  code of the hero.jsx */
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  width: 100vw;
+  height: 100vh;
+  gap: 0;
+  background: #000;
+  box-sizing: border-box;
+  justify-items: stretch;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.game-card {
+  background: #181818;
+  border-radius: 2vw;
+  border: 0.5vw solid #FFD700;
+  box-shadow: 0 0 32px 4px #ffd70044, 0 0 0 8px #000;
+
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.game-card img {
+  width: 50%;
+  height: 50%;
+  max-width: 180px;
+  aspect-ratio: 2.2/1;
+  object-fit: cover;
+  border-radius: 100%;
+  background: #222;
+  border: none;
+  box-shadow: 0 0 18px #ffd70055;
+  display: block;
+  margin-bottom: 1.5vw;
+}
+
+.card-text {
+  font-size: 2.2vw;
+  font-weight: bold;
+  color: #fff;
+  background: #000;
+  border-radius: 1vw;
+  padding: 1vw 2vw;
+  box-shadow: 0 2px 12px #000a;
+  text-align: center;
+  letter-spacing: 0.5px;
+  border: 0.3vw solid #FFD700;
+  margin: 0 auto;
+  min-width: 60%;
+  max-width: 90%;
+  position: static;
+}
+
+.card-text.coming-soon {
+  background: #000;
+  color: #fff;
+  border: 0.3vw solid #FFD700;
+}
+
+@media (max-width: 700px) {
+  .card-text {
+    font-size: 4vw;
+    padding: 2vw 2vw;
+    border-radius: 2vw;
+  }
+  .game-card img {
+    width: 80%;
+    max-width: 120px;
+    margin-bottom: 2vw;
+  }
+}
+/*  otp method */
+.auth-error {
+  color: #dc3545;
+  background: #fff0;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.auth-success {
+  color: #27ae60;
+  background: #fff0;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/*  about us button */
+
+.about-us-btn {
+  width: 100%;
+  max-width: 700px;
+  margin: 2vw auto 2vw auto;
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 500;
+  color: #fff;
+  background: #000;
+  border: 3px solid #FFD700;
+  border-radius: 2.5rem;
+  box-shadow: 0 0 16px 2px #FFD70088, 0 0 0 4px #000;
+  padding: 0.5em 1em;
+  text-align: left;
+  outline: none;
+  transition: box-shadow 0.2s, border-color 0.2s, color 0.2s;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.about-us-btn:hover,
+.about-us-btn:focus {
+  color: #FFD700;
+  border-color: #fffbe6;
+  box-shadow: 0 0 32px 4px #FFD700cc, 0 0 0 4px #000;
+  background: #181818;
+}
+
+@media (max-width: 700px) {
+  .about-us-btn {
+    font-size: 1.5rem;
+    border-radius: 1.5rem;
+    padding: 0.4em 0.7em;
+    width: 98%;
+    max-width: 98vw;
+  }
+}
+
+/*  about us page */
+
+.about-us-section {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+  color: var(--text-light);
+  background-color: var(--background-light);
+  border-radius: 1rem;
+  border: 1px solid var(--dark-gold);
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--primary-gold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.section-subtitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--primary-gold);
+}
+
+.about-text {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.about-list {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.gold-link {
+  color: var(--primary-gold);
+  text-decoration: underline;
+  transition: all 0.3s ease;
+}
+
+.gold-link:hover {
+  color: var(--secondary-gold);
+  text-decoration: none;
+}
+
+.about-text em {
+  color: var(--primary-gold);
+  font-style: normal;
+  font-weight: 500;
+}

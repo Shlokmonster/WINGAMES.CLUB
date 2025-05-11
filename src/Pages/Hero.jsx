@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 // Removed useState, layout components (Navbar, Sidebar, Footer), and icons not used here
 
 // Import GameCard with correct path (lowercase 'components')
@@ -13,6 +14,7 @@ import rummy from '../assets/rummy.png';
 
 
 function Hero() {
+    const navigate = useNavigate();
     // Data for game cards - specific to this page
     const gameCardsData = [
         { img: ludo, alt: 'Ludo Game', text: 'Ludo Game', comingSoon: false },
@@ -25,14 +27,27 @@ function Hero() {
     // The className="game-area" is applied in App.jsx's <main> tag
     return (
         <React.Fragment> { /* Use fragment to avoid unnecessary div */}
+            <button
+                className="about-us-btn"
+                onClick={() => navigate('/about')}
+            >
+                About Us
+            </button>
             {gameCardsData.map((card, index) => (
-                <GameCard
+                <div
                     key={index}
-                    img={card.img}
-                    alt={card.alt}
-                    text={card.text}
-                    comingSoon={card.comingSoon}
-                />
+                    onClick={() => {
+                        if (!card.comingSoon) navigate('/playgames');
+                    }}
+                    style={{ cursor: card.comingSoon ? 'not-allowed' : 'pointer' }}
+                >
+                    <GameCard
+                        img={card.img}
+                        alt={card.alt}
+                        text={card.text}
+                        comingSoon={card.comingSoon}
+                    />
+                </div>
             ))}
         </React.Fragment>
     );
