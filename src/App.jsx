@@ -22,7 +22,7 @@ import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
 import Wallet from './Pages/Wallet';
 import History from './Pages/History';
-import AboutUs from './Pages/Aboutus';
+import AboutUs from './Pages/AboutUs';  // Fixed the case to match the actual file name
 import { MatchVerification } from './Pages/Matchverfication';
 
 
