@@ -97,7 +97,7 @@ function App() {
                                 <MatchVerification />
                             </ProtectedRoute>
                         } />
-                        <Route path="/about" element={<AboutUs />} />
+                        <Route path="/aboutus" element={<AboutUs />} />
                     </Routes>
                 </main>
 

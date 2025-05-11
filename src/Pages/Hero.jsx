@@ -29,7 +29,7 @@ function Hero() {
         <React.Fragment> { /* Use fragment to avoid unnecessary div */}
             <button
                 className="about-us-btn"
-                onClick={() => navigate('/about')}
+                onClick={() => navigate('/aboutus')}
             >
                 About Us
             </button>
