@@ -5,6 +5,7 @@
 [build.environment]
   VITE_SUPABASE_URL = "https://absrtypgdqjblourhlgm.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFic3J0eXBnZHFqYmxvdXJobGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2MTExMjAsImV4cCI6MjA2MTE4NzEyMH0.SUsX26tHNDMYARdWVAsKwlaFlZbXzgMfGZ666cxooIQ"
+  VITE_BACKEND_URL = "https://ludo-new-production.up.railway.app"
 
 [[redirects]]
   from = "/*"
