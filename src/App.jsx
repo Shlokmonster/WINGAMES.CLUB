@@ -23,10 +23,11 @@ import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
 import Wallet from './Pages/Wallet';
 import History from './Pages/History';
-import AboutUs from './Pages/Aboutus';
+
 import { MatchVerification } from './Pages/Matchverfication';
 import ReferPage from './Pages/Refer';
 import Admin from './Pages/Admin';
+import AboutUs from './Pages/AboutUs';
 
 
 function App() {

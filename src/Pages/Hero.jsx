@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 // Import GameCard with correct path (lowercase 'components')
 import GameCard from '../Components/GameCard';
+import AboutUs from "../Pages/AboutUs"
 
 // Placeholder images
 import snakes from '../assets/snake.png';
