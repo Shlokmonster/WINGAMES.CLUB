@@ -27,6 +27,10 @@ function Hero() {
     // The className="game-area" is applied in App.jsx's <main> tag
     return (
         <React.Fragment> { /* Use fragment to avoid unnecessary div */}
+            <div className="payment-notice">
+                <p>Pay only to the displayed UPI/account; others won't be credited. <br /> Support: +91 80584 54132, +91 93515 39220</p>
+            </div>
+            
             <button
                 className="about-us-btn"
                 onClick={() => navigate('/aboutus')}

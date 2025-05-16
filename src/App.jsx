@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
     FaHome, FaWallet, FaHistory, FaShareAlt, FaBook, FaHeadset,
-    FaKeycdn, FaDice,FaCheck
+    FaKeycdn, FaDice, FaCheck, FaGift, FaUserShield
 } from 'react-icons/fa';
 
 // Import Components
@@ -12,6 +12,7 @@ import Footer from './Components/Footer';
 import Auth from './Components/Auth';
 import Profile from './Components/Profile';
 import ProtectedRoute from './Components/ProtectedRoute';
+import SplashScreen from './Components/SplashScreen';
 
 // Import Pages
 import Hero from './Pages/Hero';
@@ -22,12 +23,34 @@ import SharePage from './Pages/Share';
 import PlayGames from './Pages/PlayGames';
 import Wallet from './Pages/Wallet';
 import History from './Pages/History';
-import AboutUs from './Pages/AboutUs';  // Fixed the case to match the actual file name
+import AboutUs from './Pages/Aboutus';
 import { MatchVerification } from './Pages/Matchverfication';
+import ReferPage from './Pages/Refer';
+import Admin from './Pages/Admin';
 
 
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showSplash, setShowSplash] = useState(true);
+    const [splashFading, setSplashFading] = useState(false);
+    
+    useEffect(() => {
+        // Start fade-out animation after 1.8 seconds
+        const fadeTimer = setTimeout(() => {
+            setSplashFading(true);
+        }, 1800);
+        
+        // Hide splash screen after 2 seconds (total animation time)
+        const hideTimer = setTimeout(() => {
+            setShowSplash(false);
+        }, 2300);
+        
+        // Clean up timers
+        return () => {
+            clearTimeout(fadeTimer);
+            clearTimeout(hideTimer);
+        };
+    }, []);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -42,6 +65,7 @@ function App() {
         { to: '/playgames', icon: <FaDice />, text: 'Play Games' },
         { to: '/wallet', icon: <FaWallet />, text: 'Wallet' },
         { to: '/history', icon: <FaHistory />, text: 'History' },
+        { to: '/refer', icon: <FaGift />, text: 'Refer & Earn' },
         { to: '/kyc', icon: <FaKeycdn />, text: 'Kyc' },
         { to: '/share', icon: <FaShareAlt />, text: 'Share' },
         { to: '/rules', icon: <FaBook />, text: 'Rules' },
@@ -51,6 +75,7 @@ function App() {
 
     return (
         <div className="app-container">
+            {showSplash && <SplashScreen fading={splashFading} />}
             <Sidebar 
                 isOpen={isSidebarOpen} 
                 items={sidebarItemsData} 
@@ -98,6 +123,11 @@ function App() {
                             </ProtectedRoute>
                         } />
                         <Route path="/aboutus" element={<AboutUs />} />
+                        <Route path="/refer" element={
+                            <ProtectedRoute>
+                                <ReferPage />
+                            </ProtectedRoute>
+                        } />
                     </Routes>
                 </main>
 

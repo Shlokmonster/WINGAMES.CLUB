@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { FaEnvelope, FaLock, FaUser, FaMobileAlt } from 'react-icons/fa'
 
 export default function Auth() {
@@ -14,7 +14,23 @@ export default function Auth() {
   const [otp, setOTP] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Extract referral code from URL on component mount
+  useEffect(() => {
+    // Parse the query parameters from the URL
+    const queryParams = new URLSearchParams(location.search)
+    const refCode = queryParams.get('ref')
+    
+    if (refCode) {
+      setReferralCode(refCode)
+      console.log('Referral code detected:', refCode)
+      // Auto-switch to sign up tab when coming from a referral link
+      setIsSignUp(true)
+    }
+  }, [location])
 
   // Email/Password Sign Up
   const handleSignUp = async (e) => {
@@ -25,21 +41,23 @@ export default function Auth() {
       const { data: { user }, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username, // Store username in user metadata
+            referral_code: referralCode // Store referral code in user metadata
+          }
+        }
       })
       if (error) throw error
 
       if (user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: user.id,
-              username,
-              updated_at: new Date(),
-            },
-          ])
-        if (profileError) throw profileError
-        alert('Check your email for the confirmation link!')
+        // Store signup data in localStorage for later use after email verification
+        localStorage.setItem('pendingSignup', JSON.stringify({
+          username,
+          referralCode
+        }))
+        
+        alert('Check your email for the confirmation link! After verifying your email, please sign in to complete your profile setup.')
       }
     } catch (error) {
       setError(error.message)
@@ -54,11 +72,67 @@ export default function Auth() {
     setError('')
     try {
       setLoading(true)
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
+
+      // Check if this is a first login after email verification
+      const pendingSignup = localStorage.getItem('pendingSignup')
+      if (pendingSignup && user) {
+        const { username, referralCode } = JSON.parse(pendingSignup)
+        
+        // Create user profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: user.id,
+              username,
+              updated_at: new Date(),
+            },
+          ])
+        if (profileError) throw profileError
+
+        // If there's a referral code, create the referral relationship
+        if (referralCode) {
+          try {
+            // Find the referrer using the referral code
+            const { data: referrerData, error: referrerError } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('referral_code', referralCode)
+              .single()
+            
+            if (referrerError) {
+              console.error('Error finding referrer:', referrerError.message)
+            } else if (referrerData) {
+              // Create referral record
+              const { error: referralError } = await supabase
+                .from('referrals')
+                .insert([
+                  {
+                    referrer_id: referrerData.id,
+                    referred_id: user.id,
+                    referral_code: referralCode,
+                    status: 'pending'
+                  }
+                ])
+              
+              if (referralError) {
+                console.error('Error creating referral:', referralError.message)
+              }
+            }
+          } catch (refErr) {
+            console.error('Error processing referral:', refErr.message)
+          }
+        }
+
+        // Clear the pending signup data
+        localStorage.removeItem('pendingSignup')
+      }
+
       navigate('/profile')
     } catch (error) {
       setError(error.message)
@@ -101,6 +175,8 @@ export default function Auth() {
     if (error) {
       setError(error.message)
     } else {
+      let isNewUser = false;
+      
       // Insert username if user is new (first login) and username is provided
       if (data && data.user && username) {
         // Check if profile exists
@@ -109,8 +185,10 @@ export default function Auth() {
           .select('id')
           .eq('id', data.user.id)
           .single()
+        
         if (!profile && !profileError) {
-          await supabase
+          isNewUser = true;
+          const { error: insertError } = await supabase
             .from('profiles')
             .insert([
               {
@@ -119,6 +197,46 @@ export default function Auth() {
                 updated_at: new Date(),
               },
             ])
+            
+          if (insertError) {
+            console.error('Error creating profile:', insertError.message)
+          }
+        }
+        
+        // If this is a new user and there's a referral code, create the referral relationship
+        if (isNewUser && referralCode) {
+          try {
+            // Find the referrer using the referral code
+            const { data: referrerData, error: referrerError } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('referral_code', referralCode)
+              .single()
+            
+            if (referrerError) {
+              console.error('Error finding referrer:', referrerError.message)
+            } else if (referrerData) {
+              // Create referral record
+              const { error: referralError } = await supabase
+                .from('referrals')
+                .insert([
+                  {
+                    referrer_id: referrerData.id,
+                    referred_id: data.user.id,
+                    referral_code: referralCode,
+                    status: 'pending'
+                  }
+                ])
+              
+              if (referralError) {
+                console.error('Error creating referral:', referralError.message)
+              } else {
+                console.log('Referral relationship created successfully')
+              }
+            }
+          } catch (refErr) {
+            console.error('Error processing referral:', refErr.message)
+          }
         }
       }
       navigate('/profile')
