@@ -9,7 +9,10 @@ const { v4: uuidv4 } = require('uuid');
 
 // Initialize Express app
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
 app.use(express.json());
 
 // Create HTTP server
@@ -18,10 +21,12 @@ const server = http.createServer(app);
 // Initialize Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "*",
-    methods: ["GET", "POST"],
-    credentials: true
-  }
+    origin: process.env.FRONTEND_URL || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+  },
+  transports: ['websocket', 'polling']
 });
 
 // Initialize Redis client
