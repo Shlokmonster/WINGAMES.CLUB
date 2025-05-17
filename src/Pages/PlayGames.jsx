@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaDice, FaSpinner, FaInfoCircle, FaCoins, FaTrophy, FaMoneyBillWave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { socket } from '../lib/socket';
+import { io } from 'socket.io-client';
 import { supabase } from '../lib/supabase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

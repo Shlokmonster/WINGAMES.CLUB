@@ -11,6 +11,42 @@ export function MatchVerification() {
     const [user, setUser] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [lastGameInfo, setLastGameInfo] = useState(null);
+    const [validRoomCodes, setValidRoomCodes] = useState([]);
+    const [roomCodeError, setRoomCodeError] = useState('');
+
+    useEffect(() => {
+        // Get current user
+        const getCurrentUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getCurrentUser();
+
+        // Get last game info from localStorage
+        const storedGameInfo = localStorage.getItem('lastGameInfo');
+        if (storedGameInfo) {
+            const gameInfo = JSON.parse(storedGameInfo);
+            setLastGameInfo(gameInfo);
+            setRoomCode(gameInfo.roomCode);
+        }
+
+        // Fetch valid room codes
+        const fetchValidRoomCodes = async () => {
+            const { data, error } = await supabase
+                .from('games')
+                .select('room_code');
+            
+            if (error) {
+                console.error('Error fetching room codes:', error);
+                return;
+            }
+            
+            const codes = data.map(game => game.room_code.toUpperCase());
+            setValidRoomCodes(codes);
+        };
+        
+        fetchValidRoomCodes();
+    }, []);
 
     useEffect(() => {
         // Get current user
@@ -50,6 +86,13 @@ export function MatchVerification() {
             return;
         }
 
+        // Validate room code
+        if (!validRoomCodes.includes(roomCode.toUpperCase())) {
+            setRoomCodeError('Invalid room code. Please enter a valid room code.');
+            return;
+        }
+        setRoomCodeError('');
+
         setUploading(true);
         try {
             // Upload screenshot to storage
@@ -59,7 +102,10 @@ export function MatchVerification() {
                 .from('match-screenshots')
                 .upload(fileName, screenshot);
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error('Failed to upload screenshot. Please try again.');
+            }
 
             // Get public URL
             const { data: { publicUrl } } = supabase.storage
@@ -77,7 +123,10 @@ export function MatchVerification() {
                     submitted_at: new Date().toISOString()
                 }]);
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Database error:', dbError);
+                throw new Error('Failed to save verification. Please try again.');
+            }
 
             toast.success('Match verification submitted successfully!');
             setRoomCode('');
@@ -112,14 +161,20 @@ export function MatchVerification() {
                 <form onSubmit={handleSubmit} className="verification-form">
                     <div className="form-group">
                         <label htmlFor="roomCode">Room Code</label>
-                        <input
-                            type="text"
-                            id="roomCode"
-                            value={roomCode || ''}
-                            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                            placeholder="Enter room code"
-                            maxLength={6}
-                        />
+                        <div className="input-with-error">
+                            <input
+                                type="text"
+                                id="roomCode"
+                                value={roomCode || ''}
+                                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                placeholder="Enter room code"
+                                maxLength={6}
+                                className={roomCodeError ? 'error' : ''}
+                            />
+                            {roomCodeError && (
+                                <div className="error-message">{roomCodeError}</div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="form-group">

@@ -23,6 +23,25 @@
   flex-direction: column;
 }
 
+/* Error styles */
+.input-with-error {
+  position: relative;
+}
+
+.input-with-error input.error {
+  border: 1px solid var(--error-red);
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.error-message {
+  color: var(--error-red);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  background-color: rgba(220, 53, 69, 0.05);
+  border-radius: 4px;
+}
+
 .support-header {
   text-align: center;
   margin-bottom: 3rem;

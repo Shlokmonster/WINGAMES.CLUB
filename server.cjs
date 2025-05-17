@@ -9,10 +9,14 @@ const { v4: uuidv4 } = require('uuid');
 
 // Initialize Express app
 const app = express();
+
+// Configure CORS
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));
+
 app.use(express.json());
 
 // Create HTTP server
@@ -22,7 +26,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   },
