@@ -1,3 +1,138 @@
+/* Match Verification Responsive Styles */
+.match-verification-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 2rem 0.5rem;
+  background: var(--background-dark, #181818);
+}
+.verification-card {
+  background: var(--background-light, #232323);
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  padding: 2rem 1.2rem;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  color: var(--text-light, #fff);
+}
+.verification-card h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+.game-info, .verification-info {
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+.verification-form .form-group {
+  margin-bottom: 1.2rem;
+}
+.input-with-error input {
+  width: 100%;
+  padding: 0.7rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #222;
+  color: #fff;
+}
+.error-message {
+  color: var(--error-red, #dc3545);
+  font-size: 0.92rem;
+  margin-top: 0.3rem;
+}
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.file-input {
+  display: none;
+}
+.file-upload-label {
+  background: var(--primary-gold, #FFD700);
+  color: #222;
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+.file-upload-label:hover {
+  background: var(--secondary-gold, #DAA520);
+}
+.screenshot-preview {
+  margin-top: 1.1rem;
+  text-align: center;
+}
+.screenshot-preview img {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+.submit-btn {
+  width: 100%;
+  padding: 0.9rem 0;
+  font-size: 1.1rem;
+  background: var(--primary-gold, #FFD700);
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+.submit-btn:disabled {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
+.spinner-icon {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .verification-card {
+    padding: 1.2rem 0.5rem;
+    max-width: 98vw;
+  }
+  .match-verification-container {
+    padding: 1.2rem 0.1rem;
+  }
+  .screenshot-preview img {
+    max-width: 92vw;
+  }
+}
+@media (max-width: 480px) {
+  .verification-card {
+    padding: 0.7rem 0.2rem;
+    border-radius: 8px;
+  }
+  .game-info, .verification-info {
+    font-size: 0.97rem;
+  }
+  .submit-btn, .file-upload-label {
+    font-size: 1rem;
+    padding: 0.7rem 0.5rem;
+    border-radius: 5px;
+  }
+}
+
 /* Loader Animation */
 .lazy-loader {
   display: flex;

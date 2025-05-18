@@ -216,3 +216,5 @@ export function MatchVerification() {
         </div>
     );
 }
+
+export default MatchVerification;
