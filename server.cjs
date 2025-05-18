@@ -11,8 +11,14 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 
 // Configure CORS
+// Allow both Netlify (production) and localhost:5174 (development) for CORS
+const allowedOrigins = [
+  'https://ludonews.netlify.app', // production
+  'http://localhost:5174'        // local dev
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));
@@ -25,7 +31,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || '*',
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
