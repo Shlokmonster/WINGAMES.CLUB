@@ -28,7 +28,62 @@ const PlayGames = () => {
     const [battleAmount, setBattleAmount] = useState('');
     const [battleComment, setBattleComment] = useState('');
     const [openBattles, setOpenBattles] = useState([]);
-    const [runningBattles, setRunningBattles] = useState([]);
+    // Always-visible fake battles
+    const FAKE_BATTLES = [
+        {
+            id: 'fake1',
+            creator: { username: 'shlok' },
+            opponent: { username: 'kavya' },
+            entryFee: 100,
+            prize: 180
+        },
+        {
+            id: 'fake2',
+            creator: { username: 'rohit' },
+            opponent: { username: 'ajay' },
+            entryFee: 75,
+            prize: 135
+        },
+        {
+            id: 'fake3',
+            creator: { username: 'priya' },
+            opponent: { username: 'raj' },
+            entryFee: 50,
+            prize: 90
+        }
+    ];
+    const [realBattles, setRealBattles] = useState([]);
+    // No runningBattles state needed for rendering
+
+    // Listen for real running battles
+    useEffect(() => {
+        function handleRunningBattlesUpdate(data) {
+            const now = Date.now();
+            const battlesWithTimestamp = (data.runningBattles || []).map(battle => ({
+                ...battle,
+                receivedAt: now
+            }));
+            setRealBattles(battlesWithTimestamp);
+        }
+        if (socketRef.current) {
+            socketRef.current.on('runningBattlesUpdate', handleRunningBattlesUpdate);
+        }
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.off('runningBattlesUpdate', handleRunningBattlesUpdate);
+            }
+        };
+    }, []);
+
+    // Remove real battles after 10 minutes
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            setRealBattles(prev => prev.filter(battle => (now - battle.receivedAt) < 10 * 60 * 1000));
+        }, 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
+    // For rendering, always combine fake and real battles in the JSX directly
     const [isCreatingBattle, setIsCreatingBattle] = useState(false);
     const [isJoiningBattle, setIsJoiningBattle] = useState(false);
     const [joiningBattleId, setJoiningBattleId] = useState(null);
@@ -121,7 +176,12 @@ const PlayGames = () => {
         });
         
         socketRef.current.on('runningBattlesUpdate', (data) => {
-            setRunningBattles(data.runningBattles || []);
+            const now = Date.now();
+            const battlesWithTimestamp = (data.runningBattles || []).map(battle => ({
+                ...battle,
+                receivedAt: now
+            }));
+            setRealBattles(battlesWithTimestamp);
         });
         
         socketRef.current.on('battleCreated', (data) => {
@@ -508,8 +568,8 @@ const PlayGames = () => {
             return;
         }
         
-        if (!battleAmount || isNaN(battleAmount) || parseInt(battleAmount) <= 0) {
-            toast.error('Please enter a valid amount');
+        if (!battleAmount || isNaN(battleAmount) || parseInt(battleAmount) < 50) {
+            toast.error('Minimum amount to create a room is ₹50');
             return;
         }
         
@@ -727,14 +787,23 @@ const PlayGames = () => {
             <div className="battles-section running-battles">
                 <h3 className="section-title"><FaDice className="spinning-dice" /> Running Battles</h3>
                 <div className="battles-list">
-                    {runningBattles.length === 0 ? (
+                    {([...FAKE_BATTLES, ...realBattles].length === 0) ? (
                         <div className="no-battles">
                             <FaInfoCircle />
                             <p>No running battles</p>
                             <span>Join or create a battle to get started!</span>
                         </div>
                     ) : (
-                         runningBattles.map((battle) => (
+                        [...FAKE_BATTLES, ...realBattles]
+                            .filter(battle => 
+                                battle.creator?.username && 
+                                battle.opponent?.username && 
+                                battle.creator.username !== 'Unknown' &&
+                                battle.opponent.username !== 'Unknown' &&
+                                battle.entryFee && battle.entryFee > 0 &&
+                                battle.prize && battle.prize > 0
+                            )
+                            .map((battle) => (
                             <div key={battle.id} className="battle-card">
                                 <div className="battle-header">
                                     <h3>{battle.creator?.username || 'Unknown'} <span className="vs-text">vs</span> {battle.opponent?.username || 'Unknown'}</h3>
