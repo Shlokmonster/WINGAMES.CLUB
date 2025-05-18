@@ -29,23 +29,6 @@ export function MatchVerification() {
             setLastGameInfo(gameInfo);
             setRoomCode(gameInfo.roomCode);
         }
-
-        // Fetch valid room codes
-        const fetchValidRoomCodes = async () => {
-            const { data, error } = await supabase
-                .from('games')
-                .select('room_code');
-            
-            if (error) {
-                console.error('Error fetching room codes:', error);
-                return;
-            }
-            
-            const codes = data.map(game => game.room_code.toUpperCase());
-            setValidRoomCodes(codes);
-        };
-        
-        fetchValidRoomCodes();
     }, []);
 
     useEffect(() => {
@@ -86,13 +69,6 @@ export function MatchVerification() {
             return;
         }
 
-        // Validate room code
-        if (!validRoomCodes.includes(roomCode.toUpperCase())) {
-            setRoomCodeError('Invalid room code. Please enter a valid room code.');
-            return;
-        }
-        setRoomCodeError('');
-
         setUploading(true);
         try {
             // Upload screenshot to storage
@@ -112,15 +88,40 @@ export function MatchVerification() {
                 .from('match-screenshots')
                 .getPublicUrl(fileName);
 
-            // Store verification request in database
+            // First create a game record
+            const { data: gameData, error: gameError } = await supabase
+                .from('games')
+                .insert([{
+                    room_code: lastGameInfo?.roomCode || roomCode,
+                    bet_amount: lastGameInfo?.betAmount || 0,
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    game_type: 'ludo',
+                    game_data: {
+                        players: [{
+                            user_id: user.id,
+                            username: user.user_metadata?.username || 'Player'
+                        }]
+                    }
+                }])
+                .select();
+
+            if (gameError) {
+                console.error('Game creation error:', gameError);
+                throw new Error('Failed to create game record. Please try again.');
+            }
+
+            // Store verification request in database with game_id
             const { error: dbError } = await supabase
                 .from('match_verifications')
                 .insert([{
                     user_id: user.id,
-                    room_code: roomCode,
+                    room_code: lastGameInfo?.roomCode || roomCode,
                     screenshot_url: publicUrl,
                     status: 'pending',
-                    submitted_at: new Date().toISOString()
+                    submitted_at: new Date().toISOString(),
+                    bet_amount: lastGameInfo?.betAmount || 0,
+                    game_id: gameData[0].id // Link to the created game
                 }]);
 
             if (dbError) {
@@ -165,11 +166,9 @@ export function MatchVerification() {
                             <input
                                 type="text"
                                 id="roomCode"
-                                value={roomCode || ''}
-                                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                                placeholder="Enter room code"
-                                maxLength={6}
-                                className={roomCodeError ? 'error' : ''}
+                                value={lastGameInfo?.roomCode || ''}
+                                readOnly
+                                placeholder="Room code"
                             />
                             {roomCodeError && (
                                 <div className="error-message">{roomCodeError}</div>

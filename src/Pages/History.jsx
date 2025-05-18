@@ -28,7 +28,7 @@ const History = () => {
           setTransactions(txData || []);
         }
         
-        // Fetch match verification history
+        // Fetch match verification history without trying to join with games
         const { data: matchData, error: matchError } = await supabase
           .from('match_verifications')
           .select(`
@@ -37,11 +37,8 @@ const History = () => {
             screenshot_url,
             status,
             submitted_at,
-            games (
-              bet_amount,
-              status,
-              game_data
-            )
+            bet_amount,
+            reviewer_notes
           `)
           .eq('user_id', user.id)
           .order('submitted_at', { ascending: false });
@@ -145,9 +142,29 @@ const History = () => {
                         Submitted: {new Date(match.submitted_at).toLocaleString()}
                       </div>
                       {/* Verified date will be shown once the column is added */}
-                      {match.games && match.games.bet_amount && (
+                      {match.bet_amount && (
                         <div className="match-bet">
-                          Bet Amount: ₹{match.games.bet_amount}
+                          Bet Amount: ₹{match.bet_amount}
+                        </div>
+                      )}
+                      {match.status === 'verified' && (
+                        <div className="match-win">
+                          Status: Verified and Paid
+                        </div>
+                      )}
+                      {match.reviewer_notes && (
+                        <div className="match-notes">
+                          Notes: {match.reviewer_notes}
+                        </div>
+                      )}
+                      {match.games && (
+                        <div className="game-info">
+                          Game Status: {match.games.status}
+                          {match.games.game_data && match.games.game_data.players && (
+                            <div className="players-info">
+                              Players: {match.games.game_data.players.map(p => p.username).join(', ')}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

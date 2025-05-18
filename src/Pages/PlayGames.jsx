@@ -682,7 +682,7 @@ const PlayGames = () => {
                             openBattles.map((battle) => (
                                 <div key={battle.id} className="battle-card">
                                     <div className="battle-header">
-                                        <h3>{battle.creator.username}'s Battle</h3>
+                                        <h3>{battle.creator?.username || 'Unknown'} <span className="vs-text">vs</span> {battle.opponent?.username || 'Unknown'}</h3>
                                     </div>
                                     <div className="battle-details">
                                         <div className="battle-fee">
@@ -734,10 +734,10 @@ const PlayGames = () => {
                             <span>Join or create a battle to get started!</span>
                         </div>
                     ) : (
-                        runningBattles.map((battle) => (
-                            <div key={battle.id} className="battle-card running">
+                         runningBattles.map((battle) => (
+                            <div key={battle.id} className="battle-card">
                                 <div className="battle-header">
-                                    <h3>{battle.creator.username} <span className="vs-text">vs</span> {battle.opponent.username}</h3>
+                                    <h3>{battle.creator?.username || 'Unknown'} <span className="vs-text">vs</span> {battle.opponent?.username || 'Unknown'}</h3>
                                 </div>
                                 <div className="battle-details">
                                     <div className="battle-fee">

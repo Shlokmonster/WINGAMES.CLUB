@@ -30,7 +30,8 @@ const io = new Server(server, {
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
 });
 
 // Initialize Redis client
@@ -57,6 +58,25 @@ const gameRooms = new Map();
 
 // Use Redis for persistence of battles
 // Redis keys: 'openBattles', 'runningBattles' (as hashes)
+
+// --- Scheduled Cleanup: Remove Old Running Battles Every 10 Minutes ---
+setInterval(async () => {
+  try {
+    const now = Date.now();
+    const TEN_MINUTES = 10 * 60 * 1000;
+    const runningBattles = await getAllRunningBattles();
+    for (const battle of runningBattles) {
+      // Use matchedAt, createdAt, or fallback to createdAt
+      const ts = new Date(battle.matchedAt || battle.createdAt || battle.startedAt || battle.timestamp || 0).getTime();
+      if (ts && now - ts > TEN_MINUTES) {
+        await removeRunningBattle(battle.id);
+        console.log(`[CLEANUP] Removed old running battle: ${battle.id} (age: ${((now-ts)/60000).toFixed(1)} min)`);
+      }
+    }
+  } catch (err) {
+    console.error('[CLEANUP] Error during running battles cleanup:', err);
+  }
+}, 10 * 60 * 1000); // Every 10 minutes
 
 // Helper functions for Redis CRUD
 async function addOpenBattle(battle) {
@@ -151,6 +171,7 @@ io.on('connection', (socket) => {
       status: 'open',
       createdAt: new Date().toISOString(),
     };
+    // Only add to openBattles, NOT runningBattles
     await addOpenBattle(battle);
     const openBattles = await getAllOpenBattles();
     socket.emit('battleCreated', { battle });
@@ -211,10 +232,10 @@ io.on('connection', (socket) => {
       matchedAt: new Date().toISOString(),
     };
     
-    // Remove from open battles but don't add to running battles yet
+    // Remove from open battles but don't add to running or open battles yet
     await removeOpenBattle(battleId);
     
-    // Store the matched battle in Redis under a different key
+    // Store the matched battle in Redis under a different key (not runningBattles)
     await redisClient.hSet('matchedBattles', battleId, JSON.stringify(matchedBattle));
     
     const newOpenBattles = await getAllOpenBattles();
@@ -688,7 +709,14 @@ io.on('connection', (socket) => {
           
           if (matchedBattle) {
             console.log(`Found matched battle ${matchedBattle.id}, moving to running status`);
-            
+
+            // --- Move matched battle to runningBattles in Redis ---
+            matchedBattle.status = 'running';
+            await addRunningBattle(matchedBattle);
+            // Optionally remove from matchedBattles if you want strict separation
+            if (redisClient && redisClient.hDel) {
+              await redisClient.hDel('matchedBattles', matchedBattle.id);
+            }
             // Check if we've already processed wallet deductions for this game
             if (gameRoom.deductionsProcessed) {
               console.log('Wallet deductions already processed, skipping duplicate deductions');
@@ -1209,4 +1237,4 @@ app.post('/api/verify-match', async (req, res) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});
