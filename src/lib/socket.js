@@ -10,3 +10,4 @@ export const socket = io(SOCKET_URL, {
   reconnectionDelay: 1000,
   autoConnect: true
 }); 
+
