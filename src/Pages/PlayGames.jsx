@@ -63,8 +63,8 @@ const PlayGames = () => {
         
         getCurrentUser();
         
-        // Initialize Socket.IO connection
-        socketRef.current = io('http://localhost:3001');
+        // Initialize Socket.IO connection (dynamic for production and dev)
+        socketRef.current = io(import.meta.env.VITE_BACKEND_URL);
         
         // Original matchmaking event listeners
         socketRef.current.on('waitingForMatch', (data) => {
