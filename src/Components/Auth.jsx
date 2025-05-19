@@ -9,10 +9,12 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
-  const [tab, setTab] = useState('email') // 'email' or 'mobile'
+  const [tab, setTab] = useState('mobile') // 'email' or 'mobile', default to 'mobile'
   const [phone, setPhone] = useState('')
   const [otp, setOTP] = useState('')
   const [otpSent, setOtpSent] = useState(false)
+  const [requireUsername, setRequireUsername] = useState(false) // For profile creation after OTP
+  const [pendingUserId, setPendingUserId] = useState(null) // For new users post-OTP
   const [error, setError] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const navigate = useNavigate()
@@ -133,7 +135,7 @@ export default function Auth() {
         localStorage.removeItem('pendingSignup')
       }
 
-      navigate('/profile')
+      navigate('/')
     } catch (error) {
       setError(error.message)
     } finally {
@@ -143,132 +145,105 @@ export default function Auth() {
 
   // Mobile OTP: Send OTP
   const handleSendOTP = async (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
+    setRequireUsername(false);
     if (!phone.match(/^[6-9]\d{9}$/)) {
-      setError('Please enter a valid 10-digit Indian phone number.')
-      return
+      setError('Please enter a valid 10-digit Indian phone number.');
+      return;
     }
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({
+    setLoading(true);
+    const otpResult = await supabase.auth.signInWithOtp({
       phone: '+91' + phone
-    })
-    setLoading(false)
-    if (error) {
-      setError(error.message)
+    });
+    setLoading(false);
+    if (otpResult.error) {
+      setError(otpResult.error.message);
     } else {
-      setOtpSent(true)
+      setOtpSent(true);
     }
   }
 
   // Mobile OTP: Verify OTP
   const handleVerifyOTP = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const { data, error } = await supabase.auth.verifyOtp({
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const { data: verifyOtpData, error: verifyOtpError } = await supabase.auth.verifyOtp({
       phone: '+91' + phone,
       token: otp,
       type: 'sms'
-    })
-    setLoading(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      let isNewUser = false;
-      
-      // Insert username if user is new (first login) and username is provided
-      if (data && data.user && username) {
-        // Check if profile exists
-        const { data: profile, error: profileError } = await supabase
+    });
+    setLoading(false);
+    if (verifyOtpError) {
+      setError(verifyOtpError.message);
+      return;
+    }
+    // After OTP, check for profile
+    const userId = verifyOtpData.user.id;
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .single();
+    if (!profile) {
+      // New user: generate random username and create profile
+      setLoading(true);
+      const randomUsername = 'user' + Math.floor(100000 + Math.random() * 900000);
+      const { error: insertProfileError } = await supabase
+        .from('profiles')
+        .insert([{ id: userId, username: randomUsername }]);
+      if (insertProfileError) {
+        setLoading(false);
+        setError('Failed to create profile: ' + insertProfileError.message);
+        return;
+      }
+      // If referral code is present, create referral relationship
+      if (referralCode) {
+        const { data: referrerData, error: referrerError } = await supabase
           .from('profiles')
           .select('id')
-          .eq('id', data.user.id)
-          .single()
-        
-        if (!profile && !profileError) {
-          isNewUser = true;
-          const { error: insertError } = await supabase
-            .from('profiles')
+          .eq('referral_code', referralCode)
+          .single();
+        if (referrerError) {
+          console.error('Error finding referrer:', referrerError.message);
+        } else if (referrerData) {
+          const { error: referralInsertError } = await supabase
+            .from('referrals')
             .insert([
               {
-                id: data.user.id,
-                username,
-                updated_at: new Date(),
-              },
-            ])
-            
-          if (insertError) {
-            console.error('Error creating profile:', insertError.message)
-          }
-        }
-        
-        // If this is a new user and there's a referral code, create the referral relationship
-        if (isNewUser && referralCode) {
-          try {
-            // Find the referrer using the referral code
-            const { data: referrerData, error: referrerError } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('referral_code', referralCode)
-              .single()
-            
-            if (referrerError) {
-              console.error('Error finding referrer:', referrerError.message)
-            } else if (referrerData) {
-              // Create referral record
-              const { error: referralError } = await supabase
-                .from('referrals')
-                .insert([
-                  {
-                    referrer_id: referrerData.id,
-                    referred_id: data.user.id,
-                    referral_code: referralCode,
-                    status: 'pending'
-                  }
-                ])
-              
-              if (referralError) {
-                console.error('Error creating referral:', referralError.message)
-              } else {
-                console.log('Referral relationship created successfully')
+                referrer_id: referrerData.id,
+                referred_id: userId,
+                referral_code: referralCode,
+                status: 'pending'
               }
-            }
-          } catch (refErr) {
-            console.error('Error processing referral:', refErr.message)
+            ]);
+          if (referralInsertError) {
+            console.error('Error creating referral:', referralInsertError.message);
+          } else {
+            console.log('Referral relationship created successfully');
           }
         }
       }
-      navigate('/profile')
+      setLoading(false);
+      navigate('/');
+      return;
     }
+    // Existing user, go to profile
+    navigate('/');
   }
+
 
   return (
     <div className="auth-container">
       <div className="auth-box">
         <h2>Welcome to WinGames Ludo</h2>
         <div className="auth-tabs">
-          <button 
-            className={`auth-tab ${tab === 'email' && !isSignUp ? 'active' : ''}`}
-            onClick={() => { setTab('email'); setIsSignUp(false); setError(''); }}
-          >
-            Sign In
-          </button>
-          <button 
-            className={`auth-tab ${tab === 'email' && isSignUp ? 'active' : ''}`}
-            onClick={() => { setTab('email'); setIsSignUp(true); setError(''); }}
-          >
-            Sign Up
-          </button>
-          <button 
-            className={`auth-tab ${tab === 'mobile' ? 'active' : ''}`}
-            onClick={() => { setTab('mobile'); setError(''); setOtpSent(false); }}
-          >
-            Phone
-          </button>
+          <button className={`auth-tab active`}>Mobile</button>
         </div>
 
         {/* Email/Password Form */}
+        {/*
         {tab === 'email' && (
           <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="auth-form">
             <div className="form-group">
@@ -316,6 +291,7 @@ export default function Auth() {
             {error && <div className="auth-error">{error}</div>}
           </form>
         )}
+        */}
 
         {/* Mobile OTP Form */}
         {tab === 'mobile' && (
@@ -333,20 +309,7 @@ export default function Auth() {
                 />
               </div>
             </div>
-            {!otpSent && (
-              <div className="form-group">
-                <div className="input-icon">
-                  <FaUser className="icon" />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    placeholder="Username (optional for existing users)"
-                    style={{textIndent: '15px'}}
-                  />
-                </div>
-              </div>
-            )}
+
             {otpSent && (
               <>
                 <div className="form-group">

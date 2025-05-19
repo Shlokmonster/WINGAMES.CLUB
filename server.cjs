@@ -173,7 +173,7 @@ io.on('connection', (socket) => {
       id: battleId,
       creator: { userId, username, socketId: socket.id },
       entryFee,
-      prize: Math.floor(entryFee * 1.85), // 85% payout (15% fee)
+      prize: Math.floor(entryFee * 2), // 85% payout (15% fee) == 100%payout for next 12 days
       comment,
       status: 'open',
       createdAt: new Date().toISOString(),
