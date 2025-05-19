@@ -855,14 +855,14 @@ const PlayGames = () => {
                                             value={roomCode}
                                             onChange={(e) => setRoomCode(e.target.value)}
                                             placeholder="ENTER ROOM CODE"
-                                            maxLength={6}
+                                            maxLength={8}
                                             className="room-code-input"
                                         />
                                         <div className="room-actions">
                                             <button 
                                                 className="create-room-btn"
                                                 onClick={createRoomCode}
-                                                disabled={!roomCode || roomCode.length < 3}
+                                                disabled={!roomCode || roomCode.length !== 8}
                                             >
                                                 Share Code
                                             </button>

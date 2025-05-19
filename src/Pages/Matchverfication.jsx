@@ -64,8 +64,8 @@ export function MatchVerification() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!roomCode || !screenshot || !user) {
-            toast.error('Please fill in all fields');
+        if (!roomCode || roomCode.length !== 8 || !screenshot || !user) {
+            toast.error('Room code must be exactly 8 characters and all fields must be filled');
             return;
         }
 
@@ -168,7 +168,8 @@ export function MatchVerification() {
                                 id="roomCode"
                                 value={lastGameInfo?.roomCode || ''}
                                 readOnly
-                                placeholder="Room code"
+                                placeholder="Room code (8 characters)"
+                                maxLength={8}
                             />
                             {roomCodeError && (
                                 <div className="error-message">{roomCodeError}</div>

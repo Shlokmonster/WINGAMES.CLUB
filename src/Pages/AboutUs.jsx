@@ -5,7 +5,7 @@ const AboutUs = () => {
     <section className="about-us-section">
       <h2 className="section-title">About Us</h2>
       <p className="about-text">
-        <strong>WinGames.Club</strong> is a real-money gaming platform proudly owned and operated by SR Company
+        <strong>WinGames.Club</strong> is a real-money gaming platform proudly owned and operated by RK Company
         (“WinGames.Club” or “We” or “Us” or “Our”).
       </p>
 

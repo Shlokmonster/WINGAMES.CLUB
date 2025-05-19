@@ -13,7 +13,8 @@ const app = express();
 // Configure CORS
 // Allow both Netlify (production) and localhost:5174 (development) for CORS
 const allowedOrigins = [
-  'https://ludonews.netlify.app', // production
+  'https://wingames.club',        // production (main domain)
+  'https://ludonews.netlify.app', // old production (if still needed)
   'http://localhost:5174'        // local dev
 ];
 
