@@ -17,21 +17,21 @@ function Support() {
             icon: <FaPhone size={40} color="#25D366" />,
             alt: 'Phone', 
             text: 'Phone Support', 
-            link: 'tel:+1234567890',
+            link: 'tel:+919351539220',
             description: '24/7 Customer Support'
         },
         { 
             icon: <FaTelegram size={40} color="#0088cc" />,
             alt: 'Telegram', 
             text: 'Telegram Channel', 
-            link: 'https://t.me/yourchannel',
+            link: 'https://t.me/+919351539220',
             description: 'Join our community channel'
         },
         { 
             icon: <MdEmail size={40} color="#EA4335" />,
             alt: 'Email', 
             text: 'Email Support', 
-            link: 'mailto:support@yourdomain.com',
+            link: 'mailto:wingameshelp@gmail.com',
             description: 'Get help via email'
         },
     ];
