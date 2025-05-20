@@ -97,6 +97,11 @@ const DepositForm = ({ user, onSuccess }) => {
       setLoading(false);
       return;
     }
+    if (Number(amount) < 100) {
+      setError('Minimum deposit amount is 100.');
+      setLoading(false);
+      return;
+    }
     let proofUrl = null;
     if (proof) {
       const { data, error: uploadError } = await supabase.storage
@@ -160,12 +165,15 @@ const DepositForm = ({ user, onSuccess }) => {
         placeholder="Enter amount"
         value={amount}
         onChange={e => setAmount(e.target.value)}
-        min="1"
+        min="100"
         required
       />
+      <div className="deposit-min-note" style={{color: 'gray', fontSize: '0.95em', marginBottom: 8}}>
+        Minimum deposit is ₹100
+      </div>
       <div className="deposit-quick-amounts">
         {[100, 500, 1000, 2000, 5000].map(val => (
-          <button type="button" key={val} className="deposit-quick-btn" onClick={() => setAmount(val)}>
+          <button type="button" key={val} className="deposit-quick-btn" onClick={() => setAmount(val)} disabled={val < 100}>
             ₹{val}
           </button>
         ))}
@@ -322,6 +330,11 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
       setLoading(false);
       return;
     }
+    if (withdrawAmount < 150) {
+      setError('Minimum withdrawal amount is 150.');
+      setLoading(false);
+      return;
+    }
     if (withdrawAmount > balance) {
       setError('Withdrawal amount exceeds available balance.');
       setLoading(false);
@@ -396,12 +409,15 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
         placeholder="Enter amount"
         value={amount}
         onChange={e => setAmount(e.target.value)}
-        min="1"
+        min="150"
         required
       />
+      <div className="withdraw-min-note" style={{color: 'gray', fontSize: '0.95em', marginBottom: 8}}>
+        Minimum withdrawal is ₹150
+      </div>
       <div className="withdraw-quick-amounts">
-        {[100, 500, 1000, 2000, 5000].map(val => (
-          <button type="button" key={val} className="withdraw-quick-btn" onClick={() => setAmount(val)}>
+        {[150, 500, 1000, 2000, 5000].map(val => (
+          <button type="button" key={val} className="withdraw-quick-btn" onClick={() => setAmount(val)} disabled={val < 150}>
             ₹{val}
           </button>
         ))}

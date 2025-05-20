@@ -1,11 +1,12 @@
 {
-  "name": "Ludo App",
-  "short_name": "Ludo",
+  "name": "wingames",
+  "short_name": "wingames",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#009688",
-  "description": "Play and earn on Ludo!",
+  "description": "Play and earn real cash on WinGames!",
+
   "icons": [
     {
       "src": "/logo-192.png",
