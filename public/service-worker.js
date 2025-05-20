@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ludo-pwa-cache-v1';
+const CACHE_NAME = 'ludo-pwa-cache-v2'; // Bump this version on each breaking change!
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,17 +10,20 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(urlsToCache)
+    )
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames =>
       Promise.all(
-        urlsToCache.map(url =>
-          fetch(url)
-            .then(response => {
-              if (!response.ok) throw new Error(`Request for ${url} failed`);
-              return cache.put(url, response);
-            })
-            .catch(err => {
-              console.warn(`Failed to cache ${url}:`, err);
-            })
-        )
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
       )
     )
   );

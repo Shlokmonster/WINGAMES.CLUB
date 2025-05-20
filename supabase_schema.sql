@@ -1,7 +1,7 @@
 -- Create games table
 CREATE TABLE IF NOT EXISTS games (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  room_code TEXT NOT NULL UNIQUE,
+  room_code TEXT NOT NULL, 
   bet_amount INTEGER NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('waiting', 'active', 'completed', 'abandoned')),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

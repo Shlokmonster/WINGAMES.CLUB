@@ -6,6 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export function MatchVerification() {
     const [roomCode, setRoomCode] = useState('');
+    const [hasLost, setHasLost] = useState(false);
+    const [loadingLost, setLoadingLost] = useState(false);
     const [screenshot, setScreenshot] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [user, setUser] = useState(null);
@@ -64,6 +66,10 @@ export function MatchVerification() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (hasLost) {
+            toast.error('You have declared that you lost this game. You cannot submit a verification for this match.');
+            return;
+        }
         if (!roomCode || roomCode.length !== 8 || !screenshot || !user) {
             toast.error('Room code must be exactly 8 characters and all fields must be filled');
             return;
@@ -143,6 +149,42 @@ export function MatchVerification() {
         }
     };
 
+    // Handler for 'I lost the game'
+    const handleILost = async () => {
+        if (user && roomCode) {
+            setLoadingLost(true);
+            // First check if already declared
+            const { data, error: fetchError } = await supabase
+                .from('match_loser_confirmations')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('room_code', roomCode)
+                .maybeSingle();
+            if (fetchError) {
+                setLoadingLost(false);
+                toast.error('Could not check previous loss declaration. Please try again.');
+                return;
+            }
+            if (data) {
+                setHasLost(true);
+                setLoadingLost(false);
+                toast.info('You have already declared that you lost this game.');
+                return;
+            }
+            // If not declared, insert
+            const { error } = await supabase
+                .from('match_loser_confirmations')
+                .insert([{ user_id: user.id, room_code: roomCode }]);
+            setLoadingLost(false);
+            if (!error) {
+                setHasLost(true);
+                toast.info('You have declared that you lost this game. You cannot submit a verification for this match.');
+            } else {
+                toast.error('Failed to declare loss. Please try again.');
+            }
+        }
+    };
+
     return (
         <div className="match-verification-container">
             <ToastContainer position="top-center" />
@@ -158,6 +200,23 @@ export function MatchVerification() {
                 <p className="verification-info">
                     Please upload a screenshot of your winning game along with the room code.
                 </p>
+
+                {hasLost && (
+                    <div className="lost-message" style={{ color: 'red', marginBottom: 10 }}>
+                        You have declared that you lost this game. You cannot submit a verification for this match.
+                    </div>
+                )}
+
+                <button
+                    type="button"
+                    className="lost-btn"
+                    onClick={handleILost}
+                    disabled={hasLost || loadingLost}
+                >
+                    {loadingLost ? (
+                        <span><FaSpinner className="spinner-icon" /> Saving...</span>
+                    ) : hasLost ? 'You lost this game' : 'I lost the game'}
+                </button>
 
                 <form onSubmit={handleSubmit} className="verification-form">
                     <div className="form-group">
@@ -201,7 +260,7 @@ export function MatchVerification() {
                     <button 
                         type="submit" 
                         className="submit-btn" 
-                        disabled={uploading || !roomCode || !screenshot}
+                        disabled={uploading || !roomCode || !screenshot || hasLost}
                     >
                         {uploading ? (
                             <>
