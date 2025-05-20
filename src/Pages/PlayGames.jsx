@@ -16,7 +16,10 @@ const PlayGames = () => {
     const [walletBalance, setWalletBalance] = useState(0);
     
     // Game room state
-    const [gameRoom, setGameRoom] = useState(null);
+    const [gameRoom, setGameRoom] = useState(() => {
+    const stored = localStorage.getItem('matchedGameRoom');
+    return stored ? JSON.parse(stored) : null;
+});
     const [isReady, setIsReady] = useState(false);
     const [opponentReady, setOpponentReady] = useState(false);
     const [roomCode, setRoomCode] = useState('');
@@ -159,15 +162,20 @@ const PlayGames = () => {
         socketRef.current.on('opponentJoined', (data) => {
             setMatchStatus(`Opponent ${data.opponent.username} has joined the room!`);
             toast.success(`Opponent ${data.opponent.username} has joined the room!`);
-            setGameRoom(prev => ({
-                ...prev,
-                opponent: data.opponent,
-                players: [
-                    { userId: user?.id, username: username },
-                    { userId: data.opponent.userId, username: data.opponent.username }
-                ],
-                betAmount: prev.betAmount
-            }));
+            setGameRoom(prev => {
+                const updated = {
+                    ...prev,
+                    roomCode: data.roomCode,
+                    opponent: data.opponent,
+                    players: [
+                        { userId: user?.id, username: username },
+                        { userId: data.opponent.userId, username: data.opponent.username }
+                    ],
+                    betAmount: prev.betAmount
+                };
+                localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
+                return updated;
+            });
         });
         
         // New battle system event listeners
@@ -227,14 +235,16 @@ const PlayGames = () => {
             
             console.log('Setting game room with opponent:', opponent);
             
-            setGameRoom({
+            const gameRoomObj = {
                 roomCode: '',
                 betAmount: battle.entryFee,
                 opponent: opponent,
                 codeShared: false, // Track if code has been shared yet
                 battleId: battle.id, // Store battle ID for reference
                 isRoomCodeCreator: isRoomCodeCreator // Store who should create the room code
-            });
+            };
+            setGameRoom(gameRoomObj);
+            localStorage.setItem('matchedGameRoom', JSON.stringify(gameRoomObj));
             
             setIsCreator(isPlayerCreator);
             setShowRoomInput(true);
@@ -259,10 +269,15 @@ const PlayGames = () => {
         
         socketRef.current.on('gameCreated', (data) => {
             setRoomCode(data.roomCode);
-            setGameRoom({
-                roomCode: data.roomCode,
-                betAmount: data.betAmount,
-                opponent: data.opponent
+            setGameRoom(prev => {
+                const updated = {
+                    ...prev,
+                    roomCode: data.roomCode,
+                    betAmount: data.betAmount,
+                    opponent: data.opponent
+                };
+                localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
+                return updated;
             });
             toast.success('Game created! Get ready to play.');
         });
@@ -270,16 +285,20 @@ const PlayGames = () => {
         socketRef.current.on('roomJoined', (data) => {
             setMatchStatus(`You have joined the room!`);
             toast.success('You have joined the room!');
-            setGameRoom(prev => ({
-                ...prev,
-                roomCode: data.roomCode,
-                opponent: data.opponent,
-                players: [
-                    { userId: user?.id, username: username },
-                    { userId: data.opponent.userId, username: data.opponent.username }
-                ],
-                betAmount: prev.betAmount
-            }));
+            setGameRoom(prev => {
+                const updated = {
+                    ...prev,
+                    roomCode: data.roomCode,
+                    opponent: data.opponent,
+                    players: [
+                        { userId: user?.id, username: username },
+                        { userId: data.opponent.userId, username: data.opponent.username }
+                    ],
+                    betAmount: prev.betAmount
+                };
+                localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
+                return updated;
+            });
         });
         
         // Handle wallet error messages
@@ -330,17 +349,21 @@ const PlayGames = () => {
                 }
                 
                 // Update the game room with the latest info
-                setGameRoom(prevGameRoom => ({
-                    ...prevGameRoom,
-                    opponent: {
-                        ...prevGameRoom.opponent,
-                        userId: opponentInfo.userId,
-                        username: opponentInfo.username,
-                        isReady: opponentInfo.isReady
-                    },
-                    allPlayersReady: data.allPlayersReady,
-                    lastReadyUpdate: new Date().getTime() // Add a timestamp to force re-render
-                }));
+                setGameRoom(prevGameRoom => {
+                    const updated = {
+                        ...prevGameRoom,
+                        opponent: {
+                            ...prevGameRoom.opponent,
+                            userId: opponentInfo.userId,
+                            username: opponentInfo.username,
+                            isReady: opponentInfo.isReady
+                        },
+                        allPlayersReady: data.allPlayersReady,
+                        lastReadyUpdate: new Date().getTime() // Add a timestamp to force re-render
+                    };
+                    localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
+                    return updated;
+                });
                 
                 // If all players are ready, show a more prominent notification
                 if (data.allPlayersReady) {
@@ -385,16 +408,20 @@ const PlayGames = () => {
                             setOpponentReady(opponentInfo.isReady);
                             
                             // Update opponent info in game room
-                            setGameRoom(prevGameRoom => ({
-                                ...prevGameRoom,
-                                opponent: {
-                                    ...prevGameRoom.opponent,
-                                    userId: opponentInfo.userId,
-                                    username: opponentInfo.username,
-                                    isReady: opponentInfo.isReady
-                                },
-                                lastReadyUpdate: new Date().getTime() // Add a timestamp to force re-render
-                            }));
+                            setGameRoom(prevGameRoom => {
+                                const updated = {
+                                    ...prevGameRoom,
+                                    opponent: {
+                                        ...prevGameRoom.opponent,
+                                        userId: opponentInfo.userId,
+                                        username: opponentInfo.username,
+                                        isReady: opponentInfo.isReady
+                                    },
+                                    lastReadyUpdate: new Date().getTime() // Add a timestamp to force re-render
+                                };
+                                localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
+                                return updated;
+                            });
                         }
                     } else {
                         // Fallback to the old method if detailed player info is not available

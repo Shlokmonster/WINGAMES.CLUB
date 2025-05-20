@@ -33,6 +33,23 @@ function Hero() {
             </div>
             
             <button
+                className="download-btn"
+                id="pwa-download-btn"
+                style={{ marginBottom: '1rem' }}
+                onClick={() => {
+                  if (window.deferredPrompt) {
+                    window.deferredPrompt.prompt();
+                    window.deferredPrompt.userChoice.then(choiceResult => {
+                      window.deferredPrompt = null;
+                    });
+                  } else {
+                    alert('Install prompt not available. If you are on desktop, try using Chrome. If on mobile, use "Add to Home Screen" from the browser menu.');
+                  }
+                }}
+            >
+                Download
+            </button>
+            <button
                 className="about-us-btn"
                 onClick={() => navigate('/aboutus')}
             >
@@ -52,7 +69,9 @@ function Hero() {
                         text={card.text}
                         comingSoon={card.comingSoon}
                     />
+                    
                 </div>
+                
             ))}
         </React.Fragment>
     );

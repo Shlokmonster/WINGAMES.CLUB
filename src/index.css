@@ -1,3 +1,25 @@
+/* Download Button Styles */
+.download-btn {
+  background: var(--primary-gold, #FFD700);
+  color: #181818;
+  border: 2px solid var(--primary-gold, #FFD700);
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.75rem 2.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(218, 165, 32, 0.12);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  margin-bottom: 1.2rem;
+}
+.download-btn:hover,
+.download-btn:focus {
+  background: #181818;
+  color: var(--primary-gold, #FFD700);
+  border: 2px solid var(--primary-gold, #FFD700);
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.25);
+}
+
 /* Match Verification Responsive Styles */
 .match-verification-container {
   display: flex;
@@ -15700,10 +15722,73 @@ button {
 /* Game Area Styles */
 .game-area {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     padding: 20px;
-    flex-grow: 1; /* Allow game area to fill space */
+    flex-grow: 1;
+}
+
+@media (max-width: 600px) {
+    .game-area {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 10px;
+    }
+}
+
+/* Responsive Hero Buttons */
+.download-btn, .about-us-btn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+@media (max-width: 600px) {
+    .download-btn, .about-us-btn {
+        font-size: 1.1rem;
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+}
+
+/* Responsive Payment Notice */
+.payment-notice {
+    background: #222;
+    color: #FFD700;
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
+    text-align: center;
+}
+@media (max-width: 600px) {
+    .payment-notice {
+        font-size: 0.95rem;
+        padding: 0.7rem 0.5rem;
+    }
+}
+
+/* Responsive Game Card */
+.game-card {
+    min-height: 120px;
+    padding: 10px;
+    border-radius: 12px;
+}
+@media (max-width: 600px) {
+    .game-card {
+        min-height: 90px;
+        padding: 7px;
+        border-radius: 10px;
+    }
+    .game-card img {
+        max-width: 80px;
+        height: auto;
+    }
+    .card-text {
+        font-size: 1rem;
+    }
 }
 
 /* Support Page Styles */
