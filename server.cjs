@@ -100,8 +100,29 @@ async function removeOpenBattle(battleId) {
 }
 
 async function addRunningBattle(battle) {
+  // Add a createdAt timestamp if not present
+  if (!battle.createdAt) {
+    battle.createdAt = Date.now();
+  }
   await redisClient.hSet('runningBattles', battle.id, JSON.stringify(battle));
 }
+
+// Periodically remove running battles older than 10 minutes
+setInterval(async () => {
+  try {
+    const all = await redisClient.hGetAll('runningBattles');
+    const now = Date.now();
+    for (const [battleId, battleStr] of Object.entries(all)) {
+      const battle = JSON.parse(battleStr);
+      if (battle.createdAt && now - battle.createdAt > 10 * 60 * 1000) {
+        await redisClient.hDel('runningBattles', battleId);
+        console.log(`Auto-removed running battle ${battleId} after 10 minutes.`);
+      }
+    }
+  } catch (e) {
+    console.error('Error during running battles cleanup:', e);
+  }
+}, 60 * 1000); // Every minute
 
 async function getAllRunningBattles() {
   const all = await redisClient.hGetAll('runningBattles');
@@ -281,6 +302,47 @@ io.on('connection', (socket) => {
     io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
     
     // We don't need to send running battles here since the battle is in matched state
+  });
+
+  // --- CANCEL MATCH (NEW) ---
+  socket.on('cancelMatch', async ({ battleId, roomCode, userId, username }) => {
+    try {
+      let matchedBattle = await getMatchedBattleById(battleId);
+      let cancelled = false;
+      let gameId = roomCode ? `game_${roomCode}` : null;
+      if (matchedBattle) {
+        await removeMatchedBattle(battleId);
+        // Notify both players
+        if (matchedBattle.creator && matchedBattle.creator.socketId) {
+          io.to(matchedBattle.creator.socketId).emit('matchCancelled', {
+            message: `Match cancelled by ${username || 'opponent'}.`
+          });
+        }
+        if (matchedBattle.opponent && matchedBattle.opponent.socketId) {
+          io.to(matchedBattle.opponent.socketId).emit('matchCancelled', {
+            message: `Match cancelled by ${username || 'opponent'}.`
+          });
+        }
+        if (gameId && gameRooms.has(gameId)) {
+          gameRooms.delete(gameId);
+          cancelled = true;
+        } else {
+          cancelled = true;
+        }
+      }
+      if (cancelled) {
+        // Emit updates to all clients
+        const openBattles = await getAllOpenBattles();
+        const matchedBattles = await getAllMatchedBattles();
+        io.emit('openBattlesUpdate', { openBattles });
+        io.emit('runningBattlesUpdate', { runningBattles: [], matchedBattles });
+      } else {
+        socket.emit('battleError', { message: 'Could not cancel match. It may have already started.' });
+      }
+    } catch (err) {
+      console.error('Error cancelling match:', err);
+      socket.emit('battleError', { message: 'Server error while cancelling match.' });
+    }
   });
 
   // --- DELETE BATTLE ---
@@ -718,7 +780,25 @@ io.on('connection', (socket) => {
             console.log(`Found matched battle ${matchedBattle.id}, moving to running status`);
 
             // --- Move matched battle to runningBattles in Redis ---
+            // Ensure all required fields for running battle
+            if (!matchedBattle.creator || !matchedBattle.creator.username) {
+              matchedBattle.creator = matchedBattle.creator || {};
+              matchedBattle.creator.username = gameRoom.players[0]?.username || matchedBattle.creator.username || 'Unknown';
+              matchedBattle.creator.userId = gameRoom.players[0]?.userId || matchedBattle.creator.userId;
+            }
+            if (!matchedBattle.opponent || !matchedBattle.opponent.username) {
+              matchedBattle.opponent = matchedBattle.opponent || {};
+              matchedBattle.opponent.username = gameRoom.players[1]?.username || matchedBattle.opponent.username || 'Unknown';
+              matchedBattle.opponent.userId = gameRoom.players[1]?.userId || matchedBattle.opponent.userId;
+            }
+            if (!matchedBattle.entryFee) {
+              matchedBattle.entryFee = gameRoom.betAmount || 0;
+            }
+            if (!matchedBattle.prize) {
+              matchedBattle.prize = Math.round(Number(matchedBattle.entryFee) * 1.95);
+            }
             matchedBattle.status = 'running';
+            console.log('Adding to runningBattles:', JSON.stringify(matchedBattle));
             await addRunningBattle(matchedBattle);
             // Optionally remove from matchedBattles if you want strict separation
             if (redisClient && redisClient.hDel) {
@@ -768,11 +848,17 @@ io.on('connection', (socket) => {
                   throw new Error(`Creator doesn't have enough balance`);
                 }
                 
-                // 2. Update wallet balance
+                // 2. Update wallet balance and total_bet_amount
                 const creatorNewBalance = creatorWallet.balance - entryFee;
+                const creatorCurrentBetAmount = Number(creatorWallet.total_bet_amount || 0);
+                const creatorNewBetAmount = creatorCurrentBetAmount + entryFee;
+                
                 const { error: creatorUpdateError } = await supabase
                   .from('wallets')
-                  .update({ balance: creatorNewBalance })
+                  .update({ 
+                    balance: creatorNewBalance,
+                    total_bet_amount: creatorNewBetAmount
+                  })
                   .eq('user_id', matchedBattle.creator.userId);
               
                 if (creatorUpdateError) {
@@ -827,11 +913,17 @@ io.on('connection', (socket) => {
                   throw new Error(`Opponent doesn't have enough balance`);
                 }
                 
-                // 2. Update wallet balance
+                // 2. Update wallet balance and total_bet_amount
                 const opponentNewBalance = opponentWallet.balance - entryFee;
+                const opponentCurrentBetAmount = Number(opponentWallet.total_bet_amount || 0);
+                const opponentNewBetAmount = opponentCurrentBetAmount + entryFee;
+                
                 const { error: opponentUpdateError } = await supabase
                   .from('wallets')
-                  .update({ balance: opponentNewBalance })
+                  .update({ 
+                    balance: opponentNewBalance,
+                    total_bet_amount: opponentNewBetAmount
+                  })
                   .eq('user_id', matchedBattle.opponent.userId);
               
                 if (opponentUpdateError) {

@@ -38,45 +38,94 @@ const PlayGames = () => {
             creator: { username: 'shlok' },
             opponent: { username: 'kavya' },
             entryFee: 100,
-            prize: 180
+            prize: 195
         },
         {
             id: 'fake2',
             creator: { username: 'rohit' },
             opponent: { username: 'ajay' },
             entryFee: 75,
-            prize: 135
+            prize: 145
         },
         {
             id: 'fake3',
             creator: { username: 'priya' },
             opponent: { username: 'raj' },
             entryFee: 50,
-            prize: 90
+            prize: 95
         }
     ];
     const [realBattles, setRealBattles] = useState([]);
     // No runningBattles state needed for rendering
 
     // Listen for real running battles
+    // Handler for running battles update
+    function handleRunningBattlesUpdate(data) {
+        const now = Date.now();
+        const battlesWithTimestamp = (data.runningBattles || []).map(battle => ({
+            ...battle,
+            receivedAt: now
+        }));
+        setRealBattles(battlesWithTimestamp);
+    }
+    // Top-level robust handler for match cancelled
+    const handleMatchCancelled = (data) => {
+        // Only notify the user, do not clear state or close modal
+        toast.info(data?.message || 'The match has been cancelled by your opponent.');
+    };
+
+
+    // Timer state for auto-cancel
+    const [roomCodeTimer, setRoomCodeTimer] = useState(180);
+    const timerRef = useRef(null);
+
+    // Attach cancellation handler once, after socket connection
     useEffect(() => {
-        function handleRunningBattlesUpdate(data) {
-            const now = Date.now();
-            const battlesWithTimestamp = (data.runningBattles || []).map(battle => ({
-                ...battle,
-                receivedAt: now
-            }));
-            setRealBattles(battlesWithTimestamp);
+        if (!socketRef.current) {
+            socketRef.current = io(import.meta.env.VITE_BACKEND_URL);
         }
-        if (socketRef.current) {
-            socketRef.current.on('runningBattlesUpdate', handleRunningBattlesUpdate);
-        }
+        socketRef.current.on('matchCancelled', handleMatchCancelled);
+        socketRef.current.on('runningBattlesUpdate', handleRunningBattlesUpdate);
         return () => {
             if (socketRef.current) {
+                socketRef.current.off('matchCancelled', handleMatchCancelled);
                 socketRef.current.off('runningBattlesUpdate', handleRunningBattlesUpdate);
             }
         };
     }, []);
+
+    // Start/cancel timer when modal opens/closes or code is shared
+    useEffect(() => {
+        // Only run timer if modal is open, gameRoom exists, and code is NOT shared
+        if (showRoomInput && gameRoom && !gameRoom.codeShared) {
+            setRoomCodeTimer(180);
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+                setRoomCodeTimer(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timerRef.current);
+                        // Auto-cancel match if code still not shared
+                        handleCancelMatch({ message: 'Room code was not shared in time. Match cancelled automatically.' });
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } else {
+            // Clear timer if modal closes or code is shared
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+            setRoomCodeTimer(180);
+        }
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        };
+    }, [showRoomInput, gameRoom?.codeShared]);
 
     // Remove real battles after 10 minutes
     useEffect(() => {
@@ -248,6 +297,7 @@ const PlayGames = () => {
             
             setIsCreator(isPlayerCreator);
             setShowRoomInput(true);
+            setMatchStatus('You have been matched!'); // Show status immediately
             
             if (isRoomCodeCreator) {
                 toast.info('Create a room in Ludo King app and share the code');
@@ -654,6 +704,24 @@ const PlayGames = () => {
             username: username
         });
     };
+
+    // Cancel match handler
+    const handleCancelMatch = () => {
+        if (!gameRoom) return;
+        // Emit cancelMatch event with battleId or roomCode, depending on what is available
+        socketRef.current.emit('cancelMatch', {
+            battleId: gameRoom.battleId,
+            roomCode: gameRoom.roomCode,
+            userId: user?.id,
+            username: username
+        });
+        // Local UI update: close modal and reset state
+        setShowRoomInput(false);
+        setGameRoom(null);
+        setRoomCode('');
+        setMatchStatus('Match cancelled.');
+        toast.info('Match cancelled.');
+    };
     
     const createRoomCode = () => {
         if (!gameRoom || !user || !username || !roomCode) return;
@@ -869,9 +937,21 @@ const PlayGames = () => {
                         {/* ROOM CODE CREATOR VIEW */}
                         {gameRoom.isRoomCodeCreator && (
                             <>
-                                {/* Room code creator before sharing code */}
+                                {/* Cancel button for creator before sharing code */}
                                 {!gameRoom.codeShared && (
                                     <>
+                                        <div className="mobile-modal-status">
+    <span>{matchStatus}</span>
+    <span style={{ display: 'block', fontWeight: 500, color: '#e67e22', marginTop: 4 }}>
+        Time left: {roomCodeTimer}s
+    </span>
+</div>
+                                        <button 
+                                            className="cancel-match-btn"
+                                            onClick={handleCancelMatch}
+                                        >
+                                            Cancel Match
+                                        </button>
                                         <div className="creator-instructions">
                                             <p>1. Open Ludo King app</p>
                                             <p>2. Create a room</p>
@@ -905,13 +985,20 @@ const PlayGames = () => {
                                             {roomCode}
                                         </div>
                                         <div className="room-actions">
-                                            <button 
-                                                className="ready-btn"
-                                                onClick={handleReady}
-                                            >
-                                                I'M READY
-                                            </button>
-                                        </div>
+    <button 
+        className="ready-btn"
+        onClick={handleReady}
+    >
+        I'M READY
+    </button>
+    <button
+        className="cancel-btn"
+        style={{marginLeft: '10px', background: '#e74c3c', color: '#fff'}} 
+        onClick={handleCancelMatch}
+    >
+        Cancel Match
+    </button>
+</div>
                                     </>
                                 )}
                             </>
@@ -920,9 +1007,23 @@ const PlayGames = () => {
                         {/* ROOM CODE RECEIVER VIEW */}
                         {!gameRoom.isRoomCodeCreator && (
                             <>
-                                {/* Room code receiver waiting for code */}
+                                {/* Cancel button for receiver before code is shared */}
                                 {!gameRoom.codeShared && (
-                                    <p>Your opponent is creating a room in Ludo King. Waiting for room code...</p>
+                                    <>
+                                        <div className="mobile-modal-status">
+    <span>{matchStatus}</span>
+    <span style={{ display: 'block', fontWeight: 500, color: '#e67e22', marginTop: 4 }}>
+        Time left: {roomCodeTimer}s
+    </span>
+</div>
+                                        <button 
+                                            className="cancel-match-btn"
+                                            onClick={handleCancelMatch}
+                                        >
+                                            Cancel Match
+                                        </button>
+                                        <p>Your opponent is creating a room in Ludo King. Waiting for room code...</p>
+                                    </>
                                 )}
                                 
                                 {/* Room code receiver after receiving code */}
@@ -933,13 +1034,20 @@ const PlayGames = () => {
                                             {roomCode}
                                         </div>
                                         <div className="room-actions">
-                                            <button 
-                                                className="ready-btn"
-                                                onClick={handleReady}
-                                            >
-                                                I'M READY
-                                            </button>
-                                        </div>
+    <button 
+        className="ready-btn"
+        onClick={handleReady}
+    >
+        I'M READY
+    </button>
+    <button
+        className="cancel-btn"
+        style={{marginLeft: '10px', background: '#e74c3c', color: '#fff'}} 
+        onClick={handleCancelMatch}
+    >
+        Cancel Match
+    </button>
+</div>
                                     </>
                                 )}
                             </>

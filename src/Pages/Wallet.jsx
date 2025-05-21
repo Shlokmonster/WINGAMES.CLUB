@@ -144,6 +144,9 @@ const DepositForm = ({ user, onSuccess }) => {
       setLoading(false);
       return;
     }
+    
+    // Note: We'll update total_deposited only when the admin approves the deposit
+    // This ensures users can only withdraw after betting amounts from real deposits
 
     setSuccess('Deposit request submitted! Our team will verify and credit your wallet soon.');
     setAmount('');
@@ -317,6 +320,26 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [totalDeposited, setTotalDeposited] = useState(0);
+  const [totalBetAmount, setTotalBetAmount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('wallets')
+        .select('total_deposited, total_bet_amount')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setTotalDeposited(Number(data.total_deposited) || 0);
+            setTotalBetAmount(Number(data.total_bet_amount) || 0);
+          }
+        });
+    }
+  }, [user]);
+
+  const requiredToBetMore = Math.max(0, totalDeposited - totalBetAmount);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -337,6 +360,11 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
     }
     if (withdrawAmount > balance) {
       setError('Withdrawal amount exceeds available balance.');
+      setLoading(false);
+      return;
+    }
+    if (requiredToBetMore > 0) {
+      setError(`You must bet at least your total deposited amount before withdrawing. You need to bet ₹${requiredToBetMore.toLocaleString()} more.`);
       setLoading(false);
       return;
     }
@@ -396,6 +424,15 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
 
   return (
     <form className="withdraw-form-card" onSubmit={handleSubmit}>
+      <div className="withdraw-info" style={{marginBottom: 12}}>
+        <div>Total Deposited: <strong>₹{totalDeposited.toLocaleString()}</strong></div>
+        <div>Total Bet: <strong>₹{totalBetAmount.toLocaleString()}</strong></div>
+        {requiredToBetMore > 0 && (
+          <div className="withdraw-warning" style={{color: 'red', marginTop: 8, marginBottom: 8}}>
+            You need to bet <strong>₹{requiredToBetMore.toLocaleString()}</strong> more before you can withdraw.
+          </div>
+        )}
+      </div>
       <div className="withdraw-form-title">Withdraw Funds</div>
       <div className="withdraw-form-subtitle">Withdraw money from your wallet to your bank account or UPI</div>
       <div className="withdraw-balance-box">
@@ -433,7 +470,7 @@ const WithdrawForm = ({ user, balance, onSuccess }) => {
       />
       {error && <div className="withdraw-error">{error}</div>}
       {success && <div className="withdraw-success">{success}</div>}
-      <button className="withdraw-submit-btn" type="submit" disabled={loading}>
+      <button className="withdraw-submit-btn" type="submit" disabled={loading || requiredToBetMore > 0}>
         {loading ? 'Submitting...' : 'Submit Withdrawal Request'}
       </button>
       <div className="withdraw-note">
