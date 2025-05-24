@@ -210,9 +210,9 @@ const ReferAndEarn = () => {
             <li><span className="step">1</span> Share your referral code with friends</li>
             <li><span className="step">2</span> Your friend signs up using your code</li>
             <li><span className="step">3</span> Your friend plays and wins games</li>
-            <li><span className="step">4</span> You earn 3% of their winnings!</li>
+            <li><span className="step">4</span> You earn 2% of their winnings!</li>
           </ul>
-          <p className="reward-example">For example: If your friend plays for ₹10,000 and wins, you will receive ₹300 as a referral bonus.</p>
+          <p className="reward-example">For example: If your friend plays for ₹10,000 and wins, you will receive ₹200 as a referral bonus.</p>
         </div>
       </div>
 

@@ -1,27 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  build: {
-    // Generate source maps for better debugging
-    sourcemap: true,
-    // Ensure proper module handling
-    modulePreload: true,
-    // Optimize dependencies
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-        },
-      },
-    },
-  },
   server: {
-    // Ensure proper MIME types in development
-    headers: {
-      'Content-Type': 'text/javascript',
-    },
+    port: 5173,
+    strictPort: false, // Allow Vite to find the next available port if 5173 is busy
+    open: true // This will open the browser automatically
   },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'service-worker': resolve(__dirname, 'public/service-worker.js')
+      }
+    }
+  }
 })

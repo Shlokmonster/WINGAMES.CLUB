@@ -1,10 +1,16 @@
-const CACHE_NAME = 'ludo-pwa-cache-v4'; // Increased version number
-const DYNAMIC_CACHE = 'ludo-dynamic-cache-v2';
+const CACHE_NAME = 'ludo-pwa-cache-v5';
+const DYNAMIC_CACHE = 'ludo-dynamic-cache-v3';
+const FALLBACK_PAGE = '/offline.html';
 
 // Assets that need to be available offline
 const urlsToCache = [
   '/vite.svg',
-  '/manifest.json'
+  '/manifest.json',
+  '/offline.html',
+  '/index.html',
+  '/src/main.jsx',
+  '/src/index.css',
+  '/src/App.css'
 ];
 
 // Function to determine if a request is for an HTML file
@@ -69,7 +75,14 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          return caches.match(event.request);
+          // Return cached response or fallback page
+          return caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) return cachedResponse;
+            if (isHtmlRequest(event.request)) {
+              return caches.match(FALLBACK_PAGE);
+            }
+            return cachedResponse;
+          });
         })
     );
     return;
@@ -93,6 +106,10 @@ self.addEventListener('fetch', event => {
                 });
             }
             return response;
+          })
+          .catch(() => {
+            // Return cached response if available
+            return caches.match(event.request);
           });
       })
   );
