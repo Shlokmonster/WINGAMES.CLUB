@@ -1,6 +1,6 @@
 
 
-# 🕹️ WINGAMES.CLUB — Real Money Gaming Matchmaking Platform
+#  WINGAMES.CLUB — Real Money Gaming Matchmaking Platform
 
 Welcome to **WINGAMES.CLUB** — a real-money Ludo battle platform where users can deposit funds, find real opponents, submit proof, and win cash prizes. Built with high performance and user trust in mind, this web app is fully mobile-optimized, secure, and integrated with real payment and verification systems.
 
@@ -10,17 +10,17 @@ Welcome to **WINGAMES.CLUB** — a real-money Ludo battle platform where users c
 
 ## ⚙️ Features
 
-- 🧾 **KYC & Age Verification**
-- 👤 **Google Authentication with Supabase**
-- 💸 **Wallet System**: Deposit, Withdraw, View History
-- 🎯 **Matchmaking with Redis + Socket.IO**
-- 🎮 **Ludo Room Creation & Game Sharing**
-- 📤 **Match Verification via Screenshot Upload**
-- 💵 **Razorpay Integration for Fund Handling**
-- 📈 **Transaction & Match History**
-- 📲 **Referral System** (Earn 2% of your friend’s winnings)
+-  **KYC & Age Verification**
+-  ** Phone Number Otp based auth with Supabase**
+-  **Wallet System**: Deposit, Withdraw, View History
+-  **Matchmaking with Redis + Socket.IO**
+-  **Ludo Room Creation & Game Sharing**
+-  **Match Verification via Screenshot Upload**
+-  **Razorpay Integration for Fund Handling (Upcoming ) **
+-  **Transaction & Match History**
+-  **Referral System** (Earn 2% of your friend’s winnings)
 
-## 📱 UI Sneak Peek
+##  UI Sneak Peek
 
 | Match Verification | Share Page | KYC Verification |
 |--------------------|------------|------------------|
@@ -42,7 +42,7 @@ Welcome to **WINGAMES.CLUB** — a real-money Ludo battle platform where users c
 | **Redis**     | Queue system for battle pairing    |
 | **Cloudinary**| Image storage for screenshot proof |
 
-## 📂 Folder Structure
+##  Folder Structure
 
 ```
 /client         # Frontend (React)
@@ -50,7 +50,7 @@ Welcome to **WINGAMES.CLUB** — a real-money Ludo battle platform where users c
 /screenshots    # UI screenshots for README
 ```
 
-## 🔧 Getting Started
+##  Getting Started
 
 ### 1. Clone the Repo
 ```bash
@@ -85,7 +85,7 @@ RAZORPAY_SECRET=
 REDIS_URL=
 ```
 
-## 🧠 How It Works
+##  How It Works
 
 1. User signs in using Google (Supabase).
 2. Deposits funds to wallet (Razorpay).
@@ -94,24 +94,24 @@ REDIS_URL=
 5. Uploads screenshot to verify match outcome.
 6. Admin reviews and credits winnings.
 
-## 💰 Referral System
+##  Referral System
 
 Users can earn **2% of their friends' winnings** when they join via referral link. The referral module includes easy share buttons for WhatsApp, Telegram, etc.
 
-## 📊 Admin Panel (not shown)
+##  Admin Panel (not shown)
 
 - Approve/Reject KYC
 - Review Match Results
 - Control Matchmaking and Payouts
 - Manual Fund Adjustment
 
-## 📦 Future Plans
+## Future Plans
 
-- 🧠 AI-based screenshot validation (anti-cheat)
-- 🏆 Leaderboard & Seasonal Tournaments
-- 🔔 Push Notifications
+-  AI-based screenshot validation (anti-cheat)
+-  Leaderboard & Seasonal Tournaments
+-  Push Notifications
 
-## 👨‍💻 Developed By
+##  Developed By
 
 Made with ❤️ by [@Shlokmonster](https://github.com/Shlokmonster) for a private client project.
 
