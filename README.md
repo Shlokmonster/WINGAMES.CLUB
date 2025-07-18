@@ -80,9 +80,9 @@ Create `.env` files for both client and server:
 ```env
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
-RAZORPAY_KEY_ID=
-RAZORPAY_SECRET=
 REDIS_URL=
+{ RAZORPAY_KEY_ID=
+RAZORPAY_SECRET= }= Upcoming Feature
 ```
 
 ##  How It Works
