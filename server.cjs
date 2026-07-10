@@ -15,6 +15,7 @@ const app = express();
 const allowedOrigins = [
   'https://wingames.club',        // production (main domain)
   'https://ludonews.netlify.app', // old production (if still needed)
+  'https://wingamesludo.netlify.app', // new Netlify URL
   'http://localhost:5173',       // local dev (default port)
   'http://localhost:5174'        // local dev (alternative port)
 ];
