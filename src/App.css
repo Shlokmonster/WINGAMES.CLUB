@@ -1,0 +1,574 @@
+/* WINGAMES Mobile-First Standing Mockup Styling */
+
+/* Base container resets for mobile layout */
+.mobile-viewport-wrapper {
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent body scrolling */
+  box-sizing: border-box;
+}
+
+/* Base style for app container */
+.app-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1e29;
+  overflow: hidden !important; /* Disables outer vertical scroll completely */
+}
+
+/* Scrollable main content layout */
+.main-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.game-area {
+  flex: 1 !important;
+  overflow-y: auto !important; /* Only scroll the route content area */
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Force scrollbar styles inside the game area */
+.game-area::-webkit-scrollbar {
+  width: 6px;
+}
+.game-area::-webkit-scrollbar-track {
+  background: #1a1e29;
+}
+.game-area::-webkit-scrollbar-thumb {
+  background: #2d3545;
+  border-radius: 3px;
+}
+
+/* Base style overrides to prevent grid stretching on all viewports inside the mobile frame */
+.app-container .game-area {
+  display: flex !important;
+  flex-direction: column !important; /* Stack vertically in a natural flow */
+  padding: 12px !important;
+  gap: 16px !important;
+  align-items: stretch !important; /* Force children to stretch horizontally only */
+  height: auto !important; /* Auto height to prevent stretching */
+}
+
+/* Ensure payment notice has auto height and is fully visible */
+.app-container .payment-notice {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 10px 15px !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .payment-notice p {
+  font-size: 0.95rem !important;
+  line-height: 1.4 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure buttons in Hero page take natural heights */
+.app-container .download-btn,
+.app-container .about-us-btn {
+  width: 100% !important;
+  height: auto !important;
+  padding: 12px 15px !important;
+  margin-bottom: 10px !important;
+  box-sizing: border-box !important;
+  font-size: 1rem !important;
+  display: block !important;
+}
+
+/* Support Grid overrides */
+.app-container .support-cards-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+/* Kyc Grid overrides */
+.app-container .kyc-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+}
+
+/* Admin section overrides */
+.app-container .admin-stats {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+.app-container .admin-tabs {
+  flex-wrap: wrap !important;
+}
+
+/* Toast Notification positioning containment */
+.app-container .Toastify__toast-container {
+  width: 90% !important;
+  left: 5% !important;
+  right: 5% !important;
+  transform: none !important;
+}
+
+/* Profile Page Overrides (fixes horizontal cutoff) */
+.app-container .profile-container {
+  min-width: 100% !important;
+  width: 100% !important;
+  min-height: auto !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  background: transparent !important; /* Let the main app container background show through */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.app-container .profile-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 20px 15px !important;
+}
+
+/* Auth Container Overrides (fixes horizontal cutoff & redesigns UI) */
+.app-container .auth-container {
+  min-width: 100% !important;
+  width: 100% !important;
+  min-height: auto !important;
+  padding: 15px !important;
+  box-sizing: border-box !important;
+  background: transparent !important; /* Let main container background show through */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.app-container .auth-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 24px 20px !important;
+  background: rgba(22, 26, 35, 0.95) !important;
+  border: 1px solid var(--primary-gold) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5) !important;
+}
+
+.app-container .auth-box h2 {
+  color: #fff !important;
+  font-size: 1.3rem !important;
+  margin-bottom: 20px !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+
+/* Auth Tabs redesign */
+.app-container .auth-tabs {
+  background-color: #121620 !important;
+  padding: 4px !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  border: 1px solid #2d3545 !important;
+}
+
+.app-container .auth-tab {
+  background: transparent !important;
+  border: none !important;
+  color: #8c96a8 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.app-container .auth-tab.active {
+  background: var(--primary-gold) !important;
+  color: #121620 !important;
+}
+
+/* Auth form styling */
+.app-container .auth-form .form-group {
+  margin-bottom: 15px !important;
+  width: 100% !important;
+}
+
+.app-container .auth-form .input-icon {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.app-container .auth-form .input-icon .icon {
+  position: absolute !important;
+  left: 12px !important;
+  color: var(--primary-gold) !important;
+  font-size: 1rem !important;
+}
+
+.app-container .auth-form input {
+  width: 100% !important;
+  background-color: #121620 !important;
+  border: 1px solid #2d3545 !important;
+  color: #fff !important;
+  padding: 12px 12px 12px 35px !important; /* Extra left padding for icon */
+  font-size: 0.95rem !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  text-indent: 0 !important; /* Cancel inline style override */
+  transition: all 0.3s ease !important;
+}
+
+.app-container .auth-form input:focus {
+  border-color: var(--primary-gold) !important;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25) !important;
+  outline: none !important;
+}
+
+.app-container .auth-box button[type="submit"] {
+  background: var(--primary-gold) !important;
+  color: #121620 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  padding: 12px !important;
+  margin-top: 10px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2) !important;
+}
+
+.app-container .auth-box button[type="submit"]:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* --- PLAYGAMES PAGE REDESIGN --- */
+
+/* Create Battle Section */
+.app-container .create-battle-section {
+  background: rgba(22, 26, 35, 0.95) !important;
+  border: 1px solid var(--primary-gold) !important;
+  border-radius: 16px !important;
+  padding: 18px 15px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+  margin-bottom: 25px !important;
+  overflow: visible !important; /* Prevents "SET" button from clipping */
+  height: auto !important;
+}
+
+.app-container .section-title {
+  font-size: 1.25rem !important;
+  letter-spacing: 1px !important;
+  margin-bottom: 15px !important;
+  color: var(--primary-gold) !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid var(--primary-gold) !important;
+  padding-bottom: 5px !important;
+  display: inline-block !important;
+}
+
+.app-container .battle-form {
+  display: flex !important;
+  flex-direction: column !important; /* Stack inputs vertically inside narrow frame */
+  gap: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .battle-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background-color: #121620 !important;
+  border: 1px solid #2d3545 !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  font-size: 0.95rem !important;
+  color: #fff !important;
+  transition: all 0.3s ease !important;
+  margin: 0 !important;
+}
+
+.app-container .battle-input:focus {
+  border-color: var(--primary-gold) !important;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25) !important;
+  outline: none !important;
+}
+
+.app-container .set-battle-btn {
+  background: var(--primary-gold) !important;
+  color: #121620 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  padding: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2) !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  height: auto !important;
+}
+
+.app-container .set-battle-btn:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Battles List styling */
+.app-container .battles-list-wrapper {
+  margin-bottom: 25px !important;
+  background: rgba(22, 26, 35, 0.8) !important;
+  border: 1px solid #2d3545 !important;
+  border-radius: 16px !important;
+  padding: 15px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .battles-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Battle Card Redesign with row/wrap support to prevent horizontal squeezing */
+.app-container .battle-card {
+  background: #161a23 !important;
+  border: 1px solid #2d3545 !important;
+  border-radius: 12px !important;
+  margin-bottom: 0 !important; /* Stack cleanly using flex gap */
+  padding: 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .battle-card:hover {
+  border-color: var(--primary-gold) !important;
+  transform: translateY(-2px) !important;
+}
+
+.app-container .battle-header {
+  border-bottom: 1px solid #2d3545 !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 10px !important;
+  width: 100% !important;
+}
+
+.app-container .battle-header h3 {
+  font-size: 1rem !important;
+  color: #fff !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.app-container .vs-text {
+  color: var(--primary-gold) !important;
+  font-weight: 700 !important;
+  font-style: italic !important;
+  margin: 0 5px !important;
+}
+
+/* Wrap details in a wrap layout for side-by-side grids on mobile screen size */
+.app-container .battle-details {
+  display: flex !important;
+  flex-flow: row wrap !important; /* Symmetrical wrapping grid */
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  background-color: transparent !important;
+}
+
+.app-container .battle-fee,
+.app-container .battle-prize {
+  flex: 1 1 calc(50% - 5px) !important; /* Align side-by-side, sharing space */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  padding: 12px 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+}
+
+.app-container .fee-label,
+.app-container .prize-label {
+  color: #8c96a8 !important;
+  font-size: 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-bottom: 4px !important;
+  text-transform: uppercase !important;
+}
+
+.app-container .fee-amount,
+.app-container .prize-amount {
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+}
+
+.app-container .prize-amount {
+  color: var(--primary-gold) !important;
+}
+
+.app-container .battle-status {
+  flex: 1 1 100% !important; /* Full width row status */
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 0.9rem !important;
+  margin-top: 5px !important;
+  padding: 4px 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.app-container .status-label {
+  color: #8c96a8 !important;
+}
+
+.app-container .status-value.active {
+  color: #2ecc71 !important; /* Neon Green status */
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.app-container .battle-actions {
+  flex: 1 1 100% !important; /* Full width actions bar under details */
+  margin-top: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .join-battle-btn {
+  background: transparent !important;
+  border: 1.5px solid var(--primary-gold) !important;
+  color: var(--primary-gold) !important;
+  border-radius: 8px !important;
+  width: 100% !important;
+  padding: 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .join-battle-btn:hover {
+  background: var(--primary-gold) !important;
+  color: #161a23 !important;
+}
+
+.app-container .delete-battle-btn {
+  background: transparent !important;
+  border: 1.5px solid #e74c3c !important;
+  color: #e74c3c !important;
+  border-radius: 8px !important;
+  width: 100% !important;
+  padding: 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+
+.app-container .delete-battle-btn:hover {
+  background: #e74c3c !important;
+  color: #fff !important;
+}
+
+/* Section Header (title + rules button) */
+.app-container .section-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+  border-bottom: 2px solid var(--primary-gold) !important;
+  padding-bottom: 5px !important;
+}
+
+.app-container .section-header .section-title {
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.app-container .rules-btn {
+  background: rgba(255, 215, 0, 0.1) !important;
+  border: 1px solid var(--primary-gold) !important;
+  color: var(--primary-gold) !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+}
+
+/* Desktop standing mobile UI layout */
+@media (min-width: 481px) {
+  body {
+    background-color: #2c3e50 !important; /* Neutral dark grey/blue desktop background */
+    overflow: hidden !important; /* Prevent double scrollbars on the main browser window */
+  }
+
+  .mobile-viewport-wrapper {
+    background-color: #2c3e50;
+    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0;
+    box-sizing: border-box;
+  }
+
+  .app-container {
+    width: 100% !important;
+    max-width: 450px !important; /* Centered narrow container */
+    height: 94vh !important;
+    min-height: 94vh !important;
+    border-radius: 36px !important; /* Phone-like rounded corners */
+    border: 12px solid #161a23 !important; /* Phone bezel frame */
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8) !important; /* Shadow underneath phone */
+    overflow: hidden !important; /* Scroll remains locked at container level */
+    background-color: #1a1e29 !important;
+    
+    /* Crucial CSS trick: Forces all position: fixed descendants (modals, overlays, sidebars, alerts)
+       to position themselves relative to this phone container instead of the whole screen! */
+    transform: translate3d(0, 0, 0) !important;
+    perspective: 1px !important;
+  }
+}

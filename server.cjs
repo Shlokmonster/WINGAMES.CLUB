@@ -15,7 +15,8 @@ const app = express();
 const allowedOrigins = [
   'https://wingames.club',        // production (main domain)
   'https://ludonews.netlify.app', // old production (if still needed)
-  'http://localhost:5174'        // local dev
+  'http://localhost:5173',       // local dev (default port)
+  'http://localhost:5174'        // local dev (alternative port)
 ];
 
 app.use(cors({
@@ -54,7 +55,7 @@ const redisClient = Redis.createClient({
 
 // Initialize Supabase client
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://your-supabase-url.supabase.co';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'your-supabase-key';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'your-supabase-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Store active players waiting for a match
@@ -178,32 +179,37 @@ io.on('connection', (socket) => {
 
   // --- CREATE BATTLE ---
   socket.on('createBattle', async ({ userId, username, entryFee, comment }) => {
-    console.log(`User ${username} is creating a battle with entry fee: ${entryFee}`);
-    // Check creator's wallet balance
-    const { data: wallet, error: walletError } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('user_id', userId)
-      .single();
-    if (walletError || !wallet || wallet.balance < entryFee) {
-      socket.emit('battleError', { message: 'Insufficient wallet balance to create this battle.' });
-      return;
+    try {
+      console.log(`User ${username} is creating a battle with entry fee: ${entryFee}`);
+      // Check creator's wallet balance
+      const { data: wallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .single();
+      if (walletError || !wallet || wallet.balance < entryFee) {
+        socket.emit('battleError', { message: 'Insufficient wallet balance to create this battle.' });
+        return;
+      }
+      const battleId = generateBattleId();
+      const battle = {
+        id: battleId,
+        creator: { userId, username, socketId: socket.id },
+        entryFee,
+        prize: Math.floor(entryFee * 2), // 85% payout (15% fee) == 100%payout for next 12 days
+        comment,
+        status: 'open',
+        createdAt: new Date().toISOString(),
+      };
+      // Only add to openBattles, NOT runningBattles
+      await addOpenBattle(battle);
+      const openBattles = await getAllOpenBattles();
+      socket.emit('battleCreated', { battle });
+      io.emit('openBattlesUpdate', { openBattles });
+    } catch (err) {
+      console.error('Error in createBattle socket handler:', err);
+      socket.emit('battleError', { message: 'Server error while creating battle.' });
     }
-    const battleId = generateBattleId();
-    const battle = {
-      id: battleId,
-      creator: { userId, username, socketId: socket.id },
-      entryFee,
-      prize: Math.floor(entryFee * 2), // 85% payout (15% fee) == 100%payout for next 12 days
-      comment,
-      status: 'open',
-      createdAt: new Date().toISOString(),
-    };
-    // Only add to openBattles, NOT runningBattles
-    await addOpenBattle(battle);
-    const openBattles = await getAllOpenBattles();
-    socket.emit('battleCreated', { battle });
-    io.emit('openBattlesUpdate', { openBattles });
   });
 
   // --- GET OPEN BATTLES ---
@@ -221,87 +227,92 @@ io.on('connection', (socket) => {
 
   // --- JOIN BATTLE ---
   socket.on('joinBattle', async ({ battleId, userId, username }) => {
-    console.log(`User ${username} is trying to join battle: ${battleId}`);
-    const battle = await getOpenBattleById(battleId);
-    if (!battle || battle.status !== 'open') {
-      socket.emit('battleError', { message: 'Battle not found or already joined.' });
-      return;
-    }
-    
-    // Check both joiner's and creator's wallet balances
-    const [{ data: joinerWallet, error: joinerWalletError }, { data: creatorWallet, error: creatorWalletError }] = await Promise.all([
-      supabase.from('wallets').select('balance').eq('user_id', userId).single(),
-      supabase.from('wallets').select('balance').eq('user_id', battle.creator.userId).single()
-    ]);
-    
-    if (joinerWalletError || !joinerWallet || joinerWallet.balance < battle.entryFee) {
-      socket.emit('battleError', { message: 'Insufficient wallet balance to join this battle.' });
-      return;
-    }
-    
-    if (creatorWalletError || !creatorWallet || creatorWallet.balance < battle.entryFee) {
-      socket.emit('battleError', { message: 'Creator no longer has sufficient funds. Try another battle.' });
-      // Remove the battle from open battles
-      await removeOpenBattle(battleId);
-      const newOpenBattles = await getAllOpenBattles();
-      io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
-      return;
-    }
-    
-    // Update battle status and opponent
-    battle.status = 'matched';
-    battle.opponent = { userId, username, socketId: socket.id };
-    
-    // Keep the battle in 'matched' state until both players are ready
-    // We'll move it to 'running' only after room code exchange and both players ready
-    const matchedBattle = {
-      ...battle,
-      status: 'matched',
-      matchedAt: new Date().toISOString(),
-    };
-    
-    // Remove from open battles but don't add to running or open battles yet
-    await removeOpenBattle(battleId);
-    
-    // Store the matched battle in Redis under a different key (not runningBattles)
-    await redisClient.hSet('matchedBattles', battleId, JSON.stringify(matchedBattle));
-    
-    const newOpenBattles = await getAllOpenBattles();
-    
-    // Create customized battle objects for creator and joiner to ensure correct opponent display
-    // The battle creator is the one who should share the room code
-    const creatorBattleView = {
-      ...matchedBattle,
-      // For creator, explicitly set who the opponent is
-      viewerRole: 'creator',  // Creator of the battle shares the room code
-      isRoomCodeCreator: true, // Flag to indicate this player should create the room code
-      opponent: { userId, username, socketId: socket.id }
-    };
-    
-    const joinerBattleView = {
-      ...matchedBattle,
-      // For joiner, explicitly set who the opponent is
-      viewerRole: 'joiner',
-      isRoomCodeCreator: false, // Flag to indicate this player should wait for the room code
-      opponent: { 
-        userId: battle.creator.userId, 
-        username: battle.creator.username, 
-        socketId: battle.creator.socketId 
+    try {
+      console.log(`User ${username} is trying to join battle: ${battleId}`);
+      const battle = await getOpenBattleById(battleId);
+      if (!battle || battle.status !== 'open') {
+        socket.emit('battleError', { message: 'Battle not found or already joined.' });
+        return;
       }
-    };
-    
-    console.log('Sending to creator:', JSON.stringify(creatorBattleView));
-    console.log('Sending to joiner:', JSON.stringify(joinerBattleView));
-    
-    // Notify creator with their view
-    io.to(battle.creator.socketId).emit('battleMatched', { battle: creatorBattleView });
-    // Notify joiner with their view
-    io.to(socket.id).emit('battleMatched', { battle: joinerBattleView });
-    
-    // Update all clients with current battles
-    io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
-    
-    // We don't need to send running battles here since the battle is in matched state
+      
+      // Check both joiner's and creator's wallet balances
+      const [{ data: joinerWallet, error: joinerWalletError }, { data: creatorWallet, error: creatorWalletError }] = await Promise.all([
+        supabase.from('wallets').select('balance').eq('user_id', userId).single(),
+        supabase.from('wallets').select('balance').eq('user_id', battle.creator.userId).single()
+      ]);
+      
+      if (joinerWalletError || !joinerWallet || joinerWallet.balance < battle.entryFee) {
+        socket.emit('battleError', { message: 'Insufficient wallet balance to join this battle.' });
+        return;
+      }
+      
+      if (creatorWalletError || !creatorWallet || creatorWallet.balance < battle.entryFee) {
+        socket.emit('battleError', { message: 'Creator no longer has sufficient funds. Try another battle.' });
+        // Remove the battle from open battles
+        await removeOpenBattle(battleId);
+        const newOpenBattles = await getAllOpenBattles();
+        io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+        return;
+      }
+      
+      // Update battle status and opponent
+      battle.status = 'matched';
+      battle.opponent = { userId, username, socketId: socket.id };
+      
+      // Keep the battle in 'matched' state until both players are ready
+      // We'll move it to 'running' only after room code exchange and both players ready
+      const matchedBattle = {
+        ...battle,
+        status: 'matched',
+        matchedAt: new Date().toISOString(),
+      };
+      
+      // Remove from open battles but don't add to running or open battles yet
+      await removeOpenBattle(battleId);
+      
+      // Store the matched battle in Redis under a different key (not runningBattles)
+      await redisClient.hSet('matchedBattles', battleId, JSON.stringify(matchedBattle));
+      
+      const newOpenBattles = await getAllOpenBattles();
+      
+      // Create customized battle objects for creator and joiner to ensure correct opponent display
+      // The battle creator is the one who should share the room code
+      const creatorBattleView = {
+        ...matchedBattle,
+        // For creator, explicitly set who the opponent is
+        viewerRole: 'creator',  // Creator of the battle shares the room code
+        isRoomCodeCreator: true, // Flag to indicate this player should create the room code
+        opponent: { userId, username, socketId: socket.id }
+      };
+      
+      const joinerBattleView = {
+        ...matchedBattle,
+        // For joiner, explicitly set who the opponent is
+        viewerRole: 'joiner',
+        isRoomCodeCreator: false, // Flag to indicate this player should wait for the room code
+        opponent: { 
+          userId: battle.creator.userId, 
+          username: battle.creator.username, 
+          socketId: battle.creator.socketId 
+        }
+      };
+      
+      console.log('Sending to creator:', JSON.stringify(creatorBattleView));
+      console.log('Sending to joiner:', JSON.stringify(joinerBattleView));
+      
+      // Notify creator with their view
+      io.to(battle.creator.socketId).emit('battleMatched', { battle: creatorBattleView });
+      // Notify joiner with their view
+      io.to(socket.id).emit('battleMatched', { battle: joinerBattleView });
+      
+      // Update all clients with current battles
+      io.emit('openBattlesUpdate', { openBattles: newOpenBattles });
+      
+      // We don't need to send running battles here since the battle is in matched state
+    } catch (err) {
+      console.error('Error in joinBattle socket handler:', err);
+      socket.emit('battleError', { message: 'Server error while joining battle.' });
+    }
   });
 
   // --- CANCEL MATCH (NEW) ---

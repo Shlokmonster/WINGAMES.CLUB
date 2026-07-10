@@ -28,7 +28,7 @@ const History = () => {
           setTransactions(txData || []);
         }
         
-        // Fetch match verification history without trying to join with games
+        // Fetch match verification history with joined games info
         const { data: matchData, error: matchError } = await supabase
           .from('match_verifications')
           .select(`
@@ -37,8 +37,8 @@ const History = () => {
             screenshot_url,
             status,
             submitted_at,
-            bet_amount,
-            reviewer_notes
+            reviewer_notes,
+            games (bet_amount, status, game_data)
           `)
           .eq('user_id', user.id)
           .order('submitted_at', { ascending: false });
@@ -142,9 +142,9 @@ const History = () => {
                         Submitted: {new Date(match.submitted_at).toLocaleString()}
                       </div>
                       {/* Verified date will be shown once the column is added */}
-                      {match.bet_amount && (
+                      {match.games?.bet_amount && (
                         <div className="match-bet">
-                          Bet Amount: ₹{match.bet_amount}
+                          Bet Amount: ₹{match.games.bet_amount}
                         </div>
                       )}
                       {match.status === 'verified' && (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import './App.css';
 import {
     FaHome, FaWallet, FaHistory, FaShareAlt, FaBook, FaHeadset,
     FaKeycdn, FaDice, FaCheck, FaGift, FaUserShield
@@ -18,7 +19,6 @@ import SplashScreen from './Components/SplashScreen';
 const Hero = React.lazy(() => import('./Pages/Hero'));
 const Support = React.lazy(() => import('./Pages/Support'));
 const KycPage = React.lazy(() => import('./Pages/Kyc'));
-const RulesPage = React.lazy(() => import('./Pages/Rules'));
 const SharePage = React.lazy(() => import('./Pages/Share'));
 const PlayGames = React.lazy(() => import('./Pages/PlayGames'));
 const Wallet = React.lazy(() => import('./Pages/Wallet'));
@@ -68,72 +68,72 @@ function App() {
         { to: '/refer', icon: <FaGift />, text: 'Refer & Earn' },
         { to: '/kyc', icon: <FaKeycdn />, text: 'Kyc' },
         { to: '/share', icon: <FaShareAlt />, text: 'Share' },
-        { to: '/rules', icon: <FaBook />, text: 'Rules' },
         { to: '/support', icon: <FaHeadset />, text: 'Support' },
         { to: '/match-verification', icon: <FaCheck />, text: 'Match Verification' },
     ];
 
     return (
-        <div className="app-container">
-            {showSplash && <SplashScreen fading={splashFading} />}
-            <Sidebar 
-                isOpen={isSidebarOpen} 
-                items={sidebarItemsData} 
-                onClose={closeSidebar}
-            />
+        <div className="mobile-viewport-wrapper">
+            <div className="app-container">
+                {showSplash && <SplashScreen fading={splashFading} />}
+                <Sidebar 
+                    isOpen={isSidebarOpen} 
+                    items={sidebarItemsData} 
+                    onClose={closeSidebar}
+                />
 
-            <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : ''}`} id="main-content">
-                <Navbar toggleSidebar={toggleSidebar} />
+                <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : ''}`} id="main-content">
+                    <Navbar toggleSidebar={toggleSidebar} />
 
-                <Suspense fallback={<Loader />}>
-                  <main className="game-area">
-                      <Routes>
-                          <Route path="/" element={<Hero />} />
-                          <Route path="/auth" element={<Auth />} />
-                          <Route path="/profile" element={
-                              <ProtectedRoute>
-                                  <Profile />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/playgames" element={
-                              <ProtectedRoute>
-                                  <PlayGames />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/wallet" element={
-                              <ProtectedRoute>
-                                  <Wallet />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/history" element={
-                              <ProtectedRoute>
-                                  <History />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/support" element={<Support />} />
-                          <Route path="/kyc" element={
-                              <ProtectedRoute>
-                                  <KycPage />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/rules" element={<RulesPage />} />
-                          <Route path="/share" element={<SharePage />} />
-                          <Route path="/match-verification" element={
-                              <ProtectedRoute>
-                                  <MatchVerification />
-                              </ProtectedRoute>
-                          } />
-                          <Route path="/aboutus" element={<AboutUs />} />
-                          <Route path="/refer" element={
-                              <ProtectedRoute>
-                                  <ReferPage />
-                              </ProtectedRoute>
-                          } />
-                      </Routes>
-                  </main>
-                </Suspense>
+                    <Suspense fallback={<Loader />}>
+                      <main className="game-area">
+                          <Routes>
+                              <Route path="/" element={<Hero />} />
+                              <Route path="/auth" element={<Auth />} />
+                              <Route path="/profile" element={
+                                  <ProtectedRoute>
+                                      <Profile />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/playgames" element={
+                                  <ProtectedRoute>
+                                      <PlayGames />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/wallet" element={
+                                  <ProtectedRoute>
+                                      <Wallet />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/history" element={
+                                  <ProtectedRoute>
+                                      <History />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/support" element={<Support />} />
+                              <Route path="/kyc" element={
+                                  <ProtectedRoute>
+                                      <KycPage />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/share" element={<SharePage />} />
+                              <Route path="/match-verification" element={
+                                  <ProtectedRoute>
+                                      <MatchVerification />
+                                  </ProtectedRoute>
+                              } />
+                              <Route path="/aboutus" element={<AboutUs />} />
+                              <Route path="/refer" element={
+                                  <ProtectedRoute>
+                                      <ReferPage />
+                                  </ProtectedRoute>
+                              } />
+                          </Routes>
+                      </main>
+                    </Suspense>
 
-                <Footer />
+                    <Footer />
+                </div>
             </div>
         </div>
     );

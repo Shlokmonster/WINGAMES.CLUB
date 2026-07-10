@@ -29,7 +29,7 @@ function Hero() {
     return (
         <React.Fragment> { /* Use fragment to avoid unnecessary div */}
             <div className="payment-notice">
-                <p>Pay only to the displayed UPI/account; others won't be credited. <br /> Support: +91 80584 54132, +91 93515 39220</p>
+                <p>Pay only to the displayed UPI/account; others won't be credited. <br /> Support: +91 99999 99999, +91 88888 88888</p>
             </div>
             
             <button

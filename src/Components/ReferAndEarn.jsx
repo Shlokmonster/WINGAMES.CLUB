@@ -180,7 +180,15 @@ const ReferAndEarn = () => {
   };
 
   if (loading) {
-    return <div className="refer-loading">Loading...</div>;
+    return (
+      <div className="lazy-loader">
+        <div className="circle-loader">
+          <div className="circle"></div>
+          <div className="circle"></div>
+          <div className="circle"></div>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {

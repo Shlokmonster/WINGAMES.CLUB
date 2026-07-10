@@ -54,13 +54,28 @@ function Sidebar({ isOpen, items, onClose }) {
 
     const getUserProfile = async (userId) => {
         try {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('profiles')
                 .select('username, avatar_url')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
+
+            if (!data) {
+                // Profile doesn't exist (e.g. signup failed to create it previously)
+                // Let's self-heal and create it now
+                const randomUsername = 'user' + Math.floor(100000 + Math.random() * 900000);
+                const { data: newProfile, error: createError } = await supabase
+                    .from('profiles')
+                    .insert([{ id: userId, username: randomUsername }])
+                    .select('username, avatar_url')
+                    .single();
+                
+                if (createError) throw createError;
+                data = newProfile;
+            }
+
             setUsername(data?.username || '');
             setAvatarUrl(data?.avatar_url);
         } catch (error) {

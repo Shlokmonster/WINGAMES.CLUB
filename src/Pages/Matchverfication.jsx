@@ -70,8 +70,8 @@ export function MatchVerification() {
             toast.error('You have declared that you lost this game. You cannot submit a verification for this match.');
             return;
         }
-        if (!roomCode || roomCode.length !== 8 || !screenshot || !user) {
-            toast.error('Room code must be exactly 8 characters and all fields must be filled');
+        if (!roomCode || roomCode.trim().length < 4 || roomCode.trim().length > 12 || !screenshot || !user) {
+            toast.error('Room code must be between 4 and 12 characters and all fields must be filled');
             return;
         }
 
@@ -227,8 +227,8 @@ export function MatchVerification() {
                                 id="roomCode"
                                 value={lastGameInfo?.roomCode || ''}
                                 readOnly
-                                placeholder="Room code (8 characters)"
-                                maxLength={8}
+                                placeholder="Room code (4-12 characters)"
+                                maxLength={12}
                             />
                             {roomCodeError && (
                                 <div className="error-message">{roomCodeError}</div>

@@ -31,30 +31,6 @@ const PlayGames = () => {
     const [battleAmount, setBattleAmount] = useState('');
     const [battleComment, setBattleComment] = useState('');
     const [openBattles, setOpenBattles] = useState([]);
-    // Always-visible fake battles
-    const FAKE_BATTLES = [
-        {
-            id: 'fake1',
-            creator: { username: 'shlok' },
-            opponent: { username: 'kavya' },
-            entryFee: 100,
-            prize: 195
-        },
-        {
-            id: 'fake2',
-            creator: { username: 'rohit' },
-            opponent: { username: 'ajay' },
-            entryFee: 75,
-            prize: 145
-        },
-        {
-            id: 'fake3',
-            creator: { username: 'priya' },
-            opponent: { username: 'raj' },
-            entryFee: 50,
-            prize: 95
-        }
-    ];
     const [realBattles, setRealBattles] = useState([]);
     // No runningBattles state needed for rendering
 
@@ -79,20 +55,15 @@ const PlayGames = () => {
     const [roomCodeTimer, setRoomCodeTimer] = useState(180);
     const timerRef = useRef(null);
 
-    // Attach cancellation handler once, after socket connection
-    useEffect(() => {
-        if (!socketRef.current) {
-            socketRef.current = io(import.meta.env.VITE_BACKEND_URL);
-        }
-        socketRef.current.on('matchCancelled', handleMatchCancelled);
-        socketRef.current.on('runningBattlesUpdate', handleRunningBattlesUpdate);
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.off('matchCancelled', handleMatchCancelled);
-                socketRef.current.off('runningBattlesUpdate', handleRunningBattlesUpdate);
-            }
-        };
-    }, []);
+    // Refs to avoid stale closures in socket listeners
+    const gameRoomRef = useRef(gameRoom);
+    gameRoomRef.current = gameRoom;
+    const userRef = useRef(user);
+    userRef.current = user;
+    const usernameRef = useRef(username);
+    usernameRef.current = username;
+
+
 
     // Start/cancel timer when modal opens/closes or code is shared
     useEffect(() => {
@@ -154,14 +125,29 @@ const PlayGames = () => {
                 setUser(user);
                 console.log('Current user set:', user.id);
                 
-                // Get username from profiles
-                const { data, error } = await supabase
+                // Get username from profiles with self-healing fallback
+                let { data, error } = await supabase
                     .from('profiles')
                     .select('username')
                     .eq('id', user.id)
-                    .single();
+                    .maybeSingle();
                 
-                if (data && !error) {
+                if (error) {
+                    console.error('Error fetching profile:', error);
+                } else if (!data) {
+                    // Profile is missing, self-heal it
+                    const randomUsername = 'user' + Math.floor(100000 + Math.random() * 900000);
+                    const { data: newProfile, error: createError } = await supabase
+                        .from('profiles')
+                        .insert([{ id: user.id, username: randomUsername }])
+                        .select('username')
+                        .single();
+                    
+                    if (!createError && newProfile) {
+                        setUsername(newProfile.username);
+                        console.log('Username created and set:', newProfile.username);
+                    }
+                } else {
                     setUsername(data.username);
                     console.log('Username set:', data.username);
                 }
@@ -171,8 +157,23 @@ const PlayGames = () => {
         getCurrentUser();
         
         // Initialize Socket.IO connection (dynamic for production and dev)
+        console.log('Connecting to socket server:', import.meta.env.VITE_BACKEND_URL);
         socketRef.current = io(import.meta.env.VITE_BACKEND_URL);
         
+        // Connection status listeners
+        socketRef.current.on('connect', () => {
+            console.log('Socket connected successfully! ID:', socketRef.current.id);
+            toast.success('Connected to matchmaking server!');
+        });
+        
+        socketRef.current.on('connect_error', (err) => {
+            console.error('Socket connection error:', err);
+            toast.error(`Connection error: ${err.message}`);
+        });
+
+        socketRef.current.on('matchCancelled', handleMatchCancelled);
+        socketRef.current.on('runningBattlesUpdate', handleRunningBattlesUpdate);
+
         // Original matchmaking event listeners
         socketRef.current.on('waitingForMatch', (data) => {
             setMatchStatus(data.message);
@@ -217,10 +218,10 @@ const PlayGames = () => {
                     roomCode: data.roomCode,
                     opponent: data.opponent,
                     players: [
-                        { userId: user?.id, username: username },
+                        { userId: userRef.current?.id, username: usernameRef.current },
                         { userId: data.opponent.userId, username: data.opponent.username }
                     ],
-                    betAmount: prev.betAmount
+                    betAmount: prev?.betAmount
                 };
                 localStorage.setItem('matchedGameRoom', JSON.stringify(updated));
                 return updated;
@@ -258,7 +259,7 @@ const PlayGames = () => {
             
             // Debug battle data
             console.log('BATTLE MATCHED DATA:', battle);
-            console.log('Current user ID:', user?.id);
+            console.log('Current user ID:', userRef.current?.id);
             console.log('Opponent ID:', battle.opponent?.userId);
             console.log('Viewer Role:', battle.viewerRole);
             console.log('Is Room Code Creator?', battle.isRoomCodeCreator);
@@ -276,7 +277,7 @@ const PlayGames = () => {
             console.log('Opponent is:', opponent);
             
             // Verify opponent is not the same as current user
-            if (opponent.userId === user?.id) {
+            if (opponent.userId === userRef.current?.id) {
                 console.error('ERROR: Opponent is the same as current user!');
                 toast.error('Error: Opponent data is incorrect');
                 return;
@@ -428,30 +429,30 @@ const PlayGames = () => {
         
         socketRef.current.on('playerReadyUpdate', (data) => {
             console.log('Received playerReadyUpdate:', data);
-            console.log('Current user:', user?.id);
-            console.log('Current gameRoom:', gameRoom);
+            console.log('Current user:', userRef.current?.id);
+            console.log('Current gameRoom:', gameRoomRef.current);
             console.log('Ready status from server:', data.readyStatus);
             console.log('Detailed player info:', data.players);
             
             // Only process if this update is for our current room
-            if (gameRoom && data.roomCode === gameRoom.roomCode) {
+            if (gameRoomRef.current && data.roomCode === gameRoomRef.current.roomCode) {
                 console.log('This update is for our current room');
                 
                 // Update ready status based on the server response
-                if (data.readyStatus && user) {
+                if (data.readyStatus && userRef.current) {
                     console.log('Processing ready status update with data:', data.readyStatus);
-                    console.log('Current user ID:', user.id);
+                    console.log('Current user ID:', userRef.current.id);
                     console.log('All user IDs in ready status:', Object.keys(data.readyStatus));
                     
                     // Check if current user is ready
-                    const isPlayerReady = data.readyStatus[user.id] || false;
+                    const isPlayerReady = data.readyStatus[userRef.current.id] || false;
                     setIsReady(isPlayerReady);
                     console.log('Setting isReady to:', isPlayerReady);
                     
                     // Find opponent's ready status from the detailed player info
                     if (data.players && data.players.length === 2) {
-                        const currentPlayerInfo = data.players.find(p => p.userId === user.id);
-                        const opponentInfo = data.players.find(p => p.userId !== user.id);
+                        const currentPlayerInfo = data.players.find(p => p.userId === userRef.current.id);
+                        const opponentInfo = data.players.find(p => p.userId !== userRef.current.id);
                         
                         if (opponentInfo) {
                             console.log('Found opponent in detailed player info:', opponentInfo);
@@ -475,7 +476,7 @@ const PlayGames = () => {
                         }
                     } else {
                         // Fallback to the old method if detailed player info is not available
-                        const opponentId = gameRoom?.opponent?.userId;
+                        const opponentId = gameRoomRef.current?.opponent?.userId;
                         console.log('Looking for opponent with ID:', opponentId);
                         
                         if (opponentId && data.readyStatus.hasOwnProperty(opponentId)) {
@@ -486,7 +487,7 @@ const PlayGames = () => {
                             console.log('Cannot find opponent ID in readyStatus, trying fallback method');
                             
                             // Fallback: find any other user ID that's not the current user
-                            const otherUserId = Object.keys(data.readyStatus).find(id => id !== user.id);
+                            const otherUserId = Object.keys(data.readyStatus).find(id => id !== userRef.current.id);
                             if (otherUserId) {
                                 const isOtherUserReady = data.readyStatus[otherUserId] || false;
                                 console.log('Fallback: Setting opponentReady to:', isOtherUserReady, 'for other user ID:', otherUserId);
@@ -508,9 +509,9 @@ const PlayGames = () => {
                     // Store game info and redirect to match verification
                     // This ensures BOTH players get redirected, not just the one who receives gameStart
                     const gameInfo = {
-                        roomCode: gameRoom.roomCode,
-                        betAmount: gameRoom.betAmount,
-                        opponent: gameRoom.opponent?.username,
+                        roomCode: gameRoomRef.current.roomCode,
+                        betAmount: gameRoomRef.current.betAmount,
+                        opponent: gameRoomRef.current.opponent?.username,
                         timestamp: new Date().toISOString()
                     };
                     
@@ -535,8 +536,8 @@ const PlayGames = () => {
         
         socketRef.current.on('gameStart', (data) => {
             console.log('Game starting with data:', data);
-            console.log('Current gameRoom state:', gameRoom);
-            console.log('Current user:', user?.id, username);
+            console.log('Current gameRoom state:', gameRoomRef.current);
+            console.log('Current user:', userRef.current?.id, usernameRef.current);
             
             // Force both players to be ready in the UI
             setIsReady(true);
@@ -547,8 +548,8 @@ const PlayGames = () => {
             
             // Ensure bet amount is a number
             let betAmount = parseInt(data.betAmount);
-            if (isNaN(betAmount) && gameRoom) {
-                betAmount = parseInt(gameRoom.betAmount);
+            if (isNaN(betAmount) && gameRoomRef.current) {
+                betAmount = parseInt(gameRoomRef.current.betAmount);
             }
             if (isNaN(betAmount)) {
                 betAmount = 0;
@@ -558,9 +559,9 @@ const PlayGames = () => {
             
             // Get the latest game room data
             const gameInfo = {
-                roomCode: data.roomCode || gameRoom?.roomCode,
+                roomCode: data.roomCode || gameRoomRef.current?.roomCode,
                 betAmount: betAmount,
-                opponent: data.opponent?.username || gameRoom?.opponent?.username,
+                opponent: data.opponent?.username || gameRoomRef.current?.opponent?.username,
                 timestamp: new Date().toISOString()
             };
             
@@ -597,12 +598,14 @@ const PlayGames = () => {
         socketRef.current.on('roomCodeAvailable', (data) => {
             console.log('Received roomCodeAvailable:', data);
             setRoomCode(data.roomCode);
-            setGameRoom(prev => ({
-                ...prev,
-                roomCode: data.roomCode,
-                betAmount: prev.betAmount,
-                codeShared: true // Mark that code has been shared
-            }));
+            setGameRoom(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    roomCode: data.roomCode,
+                    codeShared: true // Mark that code has been shared
+                };
+            });
             setShowRoomInput(true);
             setMatchStatus('Room code received. Join this room in Ludo King app, then click Ready.');
             toast.success('Room code received! Join this room in Ludo King app, then click I\'M READY.');
@@ -611,7 +614,11 @@ const PlayGames = () => {
         // Cleanup on unmount
         return () => {
             if (socketRef.current) {
+                console.log('Disconnecting socket...');
+                socketRef.current.off('matchCancelled', handleMatchCancelled);
+                socketRef.current.off('runningBattlesUpdate', handleRunningBattlesUpdate);
                 socketRef.current.disconnect();
+                socketRef.current = null;
             }
         };
     }, [navigate]);
@@ -724,19 +731,20 @@ const PlayGames = () => {
     };
     
     const createRoomCode = () => {
-        if (!gameRoom || !user || !username || !roomCode) return;
+        if (!gameRoom || !user || !roomCode) return;
+        const finalUsername = username || 'User';
         console.log('EMIT createRoomCode:', {
             userId: user.id,
-            username,
-            roomCode: roomCode.toUpperCase(),
+            username: finalUsername,
+            roomCode: roomCode.trim().toUpperCase(),
             opponentId: gameRoom.opponent.userId,
             opponentSocketId: gameRoom.opponent.socketId,
             betAmount: gameRoom.betAmount
         });
         socketRef.current.emit('createRoomCode', {
             userId: user.id,
-            username,
-            roomCode: roomCode.toUpperCase(),
+            username: finalUsername,
+            roomCode: roomCode.trim().toUpperCase(),
             opponentId: gameRoom.opponent.userId,
             opponentSocketId: gameRoom.opponent.socketId,
             betAmount: gameRoom.betAmount
@@ -824,7 +832,7 @@ const PlayGames = () => {
                 )}
                 
                 {/* List of Open Battles */}
-                <div className="battles-section">
+                <div className="battles-list-wrapper">
                     <h3 className="section-title"><FaDice /> Open Battles</h3>
                     <div className="battles-list">
                         {openBattles.length === 0 ? (
@@ -882,14 +890,14 @@ const PlayGames = () => {
             <div className="battles-section running-battles">
                 <h3 className="section-title"><FaDice className="spinning-dice" /> Running Battles</h3>
                 <div className="battles-list">
-                    {([...FAKE_BATTLES, ...realBattles].length === 0) ? (
+                    {(realBattles.length === 0) ? (
                         <div className="no-battles">
                             <FaInfoCircle />
                             <p>No running battles</p>
                             <span>Join or create a battle to get started!</span>
                         </div>
                     ) : (
-                        [...FAKE_BATTLES, ...realBattles]
+                        realBattles
                             .filter(battle => 
                                 battle.creator?.username && 
                                 battle.opponent?.username && 
@@ -969,7 +977,7 @@ const PlayGames = () => {
                                             <button 
                                                 className="create-room-btn"
                                                 onClick={createRoomCode}
-                                                disabled={!roomCode || roomCode.length !== 8}
+                                                disabled={!roomCode || roomCode.trim().length < 4 || roomCode.trim().length > 12}
                                             >
                                                 Share Code
                                             </button>
