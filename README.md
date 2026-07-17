@@ -1,191 +1,208 @@
 <div align="center">
 
-# 🎲 WINGAMES.CLUB
+# 👑 WINGAMES.CLUB
 
-### Real-Money Ludo Matchmaking Platform
-
-*Deposit. Match. Play. Win.*
-
-<img src="https://i.ibb.co/4wj0yBkw/Whats-App-Image-2025-07-04-at-20-56-29.jpg" alt="WinGames UI" width="420"/>
+### **Premium Real-Money Ludo Matchmaking Platform**
+*Deposit. Match. Play. Win. Redefined with security and speed.*
 
 <br/>
 
-![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-API-000000?style=for-the-badge&logo=express&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-Realtime-010101?style=for-the-badge&logo=socket.io&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-Matchmaking-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Razorpay](https://img.shields.io/badge/Razorpay-Payments-0C2451?style=for-the-badge&logo=razorpay&logoColor=white)
+<img src="https://i.ibb.co/4wj0yBkw/Whats-App-Image-2025-07-04-at-20-56-29.jpg" alt="WinGames UI" width="450" style="border-radius: 12px; border: 3px solid #D4AF37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);"/>
+
+<br/>
+<br/>
+
+[![React](https://img.shields.io/badge/React-Frontend-%23D4AF37?style=for-the-badge&logo=react&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://react.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-Backend-%23D4AF37?style=for-the-badge&logo=node.js&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express.js-API-%23D4AF37?style=for-the-badge&logo=express&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://expressjs.com)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-%23D4AF37?style=for-the-badge&logo=supabase&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://supabase.com)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-Realtime-%23D4AF37?style=for-the-badge&logo=socket.io&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://socket.io)
+[![Redis](https://img.shields.io/badge/Redis-Matchmaking-%23D4AF37?style=for-the-badge&logo=redis&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://redis.io)
+[![Razorpay](https://img.shields.io/badge/Razorpay-Payments-%23D4AF37?style=for-the-badge&logo=razorpay&logoColor=%23D4AF37&labelColor=%230A0A0A)](https://razorpay.com)
 
 </div>
 
 ---
 
-## 📖 Overview
+## 🔱 Overview
 
-**WinGames.club** is a real-money Ludo battle platform where players deposit funds, get matched against real opponents, play, submit proof of the result, and get paid out on wins. It's built as a full-stack, mobile-optimized web app with a strong focus on **security, trust, and speed** — OTP-based auth, KYC/age verification, real-time matchmaking, and a wallet system all wired together end to end.
+**WinGames.club** is an elite, mobile-first real-money Ludo battle arena. Players securely deposit funds, queue for real-time matchmaking against active opponents, engage in competitive matches, and verify results via secure screenshot uploads to receive payouts.
 
-> Built as a private client project — a complete, production-style architecture from auth to payouts.
+The application leverages a high-performance, production-ready backend framework designed around **trust, speed, and strict verification workflows**—featuring OTP authentication, comprehensive KYC verification, live matchmaking synchronization, and a full-featured wallet system.
 
----
-
-## ✨ Features
-
-| | Feature | Description |
-|---|---------|-------------|
-| 🔐 | **KYC & Age Verification** | Identity checks before real-money play is unlocked |
-| 📱 | **OTP Auth (Supabase)** | Passwordless phone-number sign-in |
-| 💰 | **Wallet System** | Deposit, withdraw, and full transaction history |
-| ⚡ | **Live Matchmaking** | Redis-backed queueing paired with Socket.IO for instant pairing |
-| 🎮 | **Ludo Room Creation** | Shareable room codes to start a match with your opponent |
-| 📸 | **Screenshot Match Verification** | Players submit proof of result for admin review |
-| 💳 | **Razorpay Integration** | Deposits & withdrawals *(upcoming)* |
-| 📊 | **Match & Transaction History** | Full audit trail for every game and payment |
-| 🔗 | **Referral Program** | Earn 2% of your referred friends' winnings |
+> 🗲 **Client Project Showcase:** Fully architected system demonstrating end-to-end transaction integrity, authentication flows, and real-time state management.
 
 ---
 
-## 🖼️ UI Sneak Peek
+## ⚜️ Features & Highlights
 
-<table align="center">
-<tr>
-  <td align="center"><b>Match Verification</b></td>
-  <td align="center"><b>Share Page</b></td>
-  <td align="center"><b>KYC Verification</b></td>
-</tr>
-<tr>
-  <td><img src="https://i.ibb.co/Xk8jB4S6/Whats-App-Image-2025-07-04-at-20-56-32-1.jpg" width="260"/></td>
-  <td><img src="https://i.ibb.co/Lz8NZygb/Whats-App-Image-2025-07-04-at-20-56-32.jpg" width="260"/></td>
-  <td><img src="https://i.ibb.co/SD8Xf1N7/Whats-App-Image-2025-07-04-at-20-56-31-1.jpg" width="260"/></td>
-</tr>
-<tr>
-  <td align="center"><b>Referral System</b></td>
-  <td align="center"><b>Transactions</b></td>
-  <td align="center"><b>Battle System</b></td>
-</tr>
-<tr>
-  <td><img src="https://i.ibb.co/9Ft8bbG/Whats-App-Image-2025-07-04-at-20-56-31.jpg" width="260"/></td>
-  <td><img src="https://i.ibb.co/tMF8kbBv/Whats-App-Image-2025-07-04-at-20-56-30-2.jpg" width="260"/></td>
-  <td><img src="https://i.ibb.co/QvPVSwxn/Whats-App-Image-2025-07-04-at-20-56-30.jpg" width="260"/></td>
-</tr>
+```
+🔑 KYC & Verification  ──► Fully-validated age check and identity verification
+📱 Passwordless Auth    ──► Swift Supabase Phone OTP-based authentication
+💰 Secure Wallet        ──► Seamless deposits, withdrawals, and full ledger audits
+⚡ Live Matchmaking     ──► Redis queues combined with Socket.IO for instant pairing
+🎮 Game Room Management ──► Direct Room Code sharing for rapid game initiation
+📸 Results Verification  ──► Screenshot evidence submission verified by platform admins
+🔗 Referral Incentive   ──► Native viral loop giving users 2% of referred player wins
+```
+
+---
+
+## 🖼️ UI Showcase
+
+<table align="center" style="border: 2px solid #D4AF37; border-collapse: collapse; background-color: #0A0A0A;">
+  <thead>
+    <tr style="background-color: #1A1A1A; border-bottom: 2px solid #D4AF37;">
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">Match Verification</th>
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">Share & Invite</th>
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">KYC Verification</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/Xk8jB4S6/Whats-App-Image-2025-07-04-at-20-56-32-1.jpg" width="250" style="border-radius: 8px;"/></td>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/Lz8NZygb/Whats-App-Image-2025-07-04-at-20-56-32.jpg" width="250" style="border-radius: 8px;"/></td>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/SD8Xf1N7/Whats-App-Image-2025-07-04-at-20-56-31-1.jpg" width="250" style="border-radius: 8px;"/></td>
+    </tr>
+    <tr style="background-color: #1A1A1A; border-bottom: 2px solid #D4AF37;">
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">Referral Dashboard</th>
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">Transaction Ledger</th>
+      <th align="center" style="padding: 10px; color: #D4AF37; font-weight: bold;">Battle Arena</th>
+    </tr>
+    <tr>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/9Ft8bbG/Whats-App-Image-2025-07-04-at-20-56-31.jpg" width="250" style="border-radius: 8px;"/></td>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/tMF8kbBv/Whats-App-Image-2025-07-04-at-20-56-30-2.jpg" width="250" style="border-radius: 8px;"/></td>
+      <td align="center" style="padding: 8px; border: 1px solid #333;"><img src="https://i.ibb.co/QvPVSwxn/Whats-App-Image-2025-07-04-at-20-56-30.jpg" width="250" style="border-radius: 8px;"/></td>
+    </tr>
+  </tbody>
 </table>
 
 ---
 
-## 🛠️ Tech Stack
+## 📐 System Architecture
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | React | User interface |
-| **Backend** | Node.js + Express | REST API server |
-| **Auth & DB** | Supabase | Phone OTP auth + PostgreSQL |
-| **Payments** | Razorpay | Deposits & withdrawals |
-| **Realtime** | Socket.IO | Live matchmaking events |
-| **Queueing** | Redis | Battle pairing queue |
-| **Media** | Cloudinary | Screenshot proof storage |
+Below is the conceptual data and event flow map of **WinGames.club**:
+
+```mermaid
+graph TD
+    %% Custom Styling for Gold and Black Theme
+    classDef client fill:#0A0A0A,stroke:#D4AF37,stroke-width:2px,color:#FFF;
+    classDef server fill:#1A1A1A,stroke:#D4AF37,stroke-width:2px,color:#FFF;
+    classDef storage fill:#262626,stroke:#8C7853,stroke-width:1px,color:#D4AF37;
+    classDef external fill:#0D0D0D,stroke:#A1824A,stroke-width:1.5px,color:#FFF;
+
+    subgraph ClientSpace ["User Client Interface"]
+        C[React SPA Client]:::client
+    end
+
+    subgraph BackendSpace ["Application Backend Core"]
+        S[Node.js + Express API Server]:::server
+        WS[Socket.IO Realtime Engine]:::server
+        R[(Redis Matchmaking Queue)]:::storage
+    end
+
+    subgraph DataSpace ["Data & Platform Services"]
+        DB[(Supabase PostgreSQL)]:::storage
+        Auth[Supabase Auth Service]:::external
+        Cloud[Cloudinary CDN]:::external
+        Pay[Razorpay Payment API]:::external
+    end
+
+    %% Interactions
+    C <-->|HTTP / WebSockets| WS
+    C -->|REST Requests| S
+    C -->|OTP Verification| Auth
+    
+    S <-->|Read / Write Queues| R
+    S <-->|Data Persistence & Schema| DB
+    S -->|Upload Proof| Cloud
+    S -->|Initiate Payouts / Deposits| Pay
+    
+    WS <-->|Synchronize State| S
+
+    %% Flow Indicators
+    style ClientSpace fill:none,stroke:#D4AF37,stroke-dasharray: 5 5;
+    style BackendSpace fill:none,stroke:#D4AF37,stroke-dasharray: 5 5;
+    style DataSpace fill:none,stroke:#D4AF37,stroke-dasharray: 5 5;
+```
 
 ---
 
-## 🧭 How It Works
+## ⚙️ Tech Stack & Roles
 
-```
- 1. Sign in            →  Phone OTP via Supabase
- 2. Deposit             →  Add funds to wallet (Razorpay)
- 3. Join Queue          →  Matchmaking via Redis + Socket.IO
- 4. Play                →  Ludo match using a shared room code
- 5. Verify              →  Upload screenshot of the result
- 6. Payout              →  Admin reviews & credits winnings
-```
+| Service | Category | Functionality |
+| :--- | :--- | :--- |
+| **React** | Frontend | Highly responsive UI, optimized for mobile WebViews |
+| **Node.js / Express** | Backend | Core RESTful API routing, business logic, validation |
+| **Supabase** | DB & Identity | PostgreSQL schema enforcement & Secure Passwordless Phone Auth |
+| **Socket.IO** | Realtime | Synchronous event loops for multiplayer game setup |
+| **Redis** | Queue Management | Matchmaking queue memory broker ensuring quick pairing |
+| **Cloudinary** | Media | Dynamic image storage for game results verification |
+| **Razorpay** | Transactions | Secured payment gateway integration for user wallets |
 
 ---
 
-## 📂 Folder Structure
+## 🔄 Core User Flow
+
+```
+[Phone Auth] ➔ [Deposit Funds] ➔ [Join Redis Queue] ➔ [Get Room Code] ➔ [Play Match] ➔ [Upload Proof] ➔ [Receive Payout]
+```
+
+1. **Verify Identity:** Authenticate instantly with Phone OTP and complete KYC.
+2. **Fund Wallet:** Load balance via secure Razorpay checkout gateway.
+3. **Queue Up:** Enter matchmaking queue; Redis matches you with opponents of similar stakes.
+4. **Acquire Room:** Socket.IO pushes a shared Room Code for the Ludo platform.
+5. **Submit & Settle:** Snap and upload the winning screen. Admin panel clears validation to release the stakes.
+
+---
+
+## 📂 Project Structure
 
 ```
 WINGAMES.CLUB/
-├── client/         # React frontend
-├── server/         # Express.js backend
-└── screenshots/    # UI screenshots for README
+├── client/           # Vite + React Frontend Application
+│   ├── src/
+│   │   ├── Components/
+│   │   ├── Pages/
+│   │   └── index.css # Styling Definitions
+├── server/           # Express Server & Socket.IO Matchmaker
+└── complete_schema.sql  # Database Schema & Functions
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Installation & Local Setup
 
-### 1. Clone the repository
-
+### 1. Clone & Access Project
 ```bash
 git clone https://github.com/Shlokmonster/WINGAMES.CLUB.git
 cd WINGAMES.CLUB
 ```
 
-### 2. Install dependencies
-
-**Frontend**
+### 2. Install Client Dependencies
 ```bash
-cd client
-npm install
-npm start
-```
-
-**Backend**
-```bash
-cd ../server
 npm install
 npm run dev
 ```
 
-### 3. Configure environment variables
-
-Create a `.env` file in both `client/` and `server/`:
-
+### 3. Setup Backend Environment
+Initialize environment parameters (`.env`) inside the root directory:
 ```env
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-REDIS_URL=
-
-# Upcoming feature
-RAZORPAY_KEY_ID=
-RAZORPAY_SECRET=
+PORT=5000
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+REDIS_URL=your_redis_url
+RAZORPAY_KEY_ID=your_razorpay_id
+RAZORPAY_KEY_SECRET=your_razorpay_secret
+CLOUDINARY_URL=your_cloudinary_url
 ```
 
 ---
 
-## 🧑‍💼 Admin Panel
-
-*(not publicly shown)*
-
-- ✅ Approve / reject KYC submissions
-- 🏆 Review match results
-- 🎯 Control matchmaking & payouts
-- 💵 Manual fund adjustments
+## 👑 Developed By
+Crafted with precision by **[@Shlokmonster](https://github.com/Shlokmonster)**. 
 
 ---
 
-## 🔗 Referral System
-
-Invite friends and earn **2% of their winnings** for every match they play. Built-in one-tap share buttons make it easy to send referral links via WhatsApp, Telegram, and more.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] AI-based screenshot validation (anti-cheat)
-- [ ] Leaderboards & seasonal tournaments
-- [ ] Push notifications
-- [ ] Full Razorpay payment go-live
-
----
-
-## 👨‍💻 Developed By
-
-Made with ❤️ by **[@Shlokmonster](https://github.com/Shlokmonster)** — built as a private client project.
-
----
-
-## ⚠️ Disclaimer
-
-This project was built for **educational and freelance portfolio purposes**. All payment flows were integrated under client license and jurisdictional rules. Ensure full compliance with applicable Indian gaming laws (which vary by state) before reusing or deploying this project.
-
-</div>
+## ⚖️ Legal & Disclaimer
+This repository is created exclusively for **portfolio and client presentation purposes**. All financial integrations rely on licensed client assets and sandboxed test environments. Verify and adhere to state-specific regulations on skill-based gaming in your region before using, adapting, or hosting this software.
