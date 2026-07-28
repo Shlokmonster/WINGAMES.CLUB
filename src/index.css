@@ -4056,7 +4056,6 @@ button {
 
 }
 
-
 /* Battle System Styles */
 .play-games-container {
     display: flex;
@@ -4066,17 +4065,60 @@ button {
     margin: 0 auto;
     background-color: var(--background-darker);
     min-height: 100vh;
+    height: auto;
 }
 
+/* Top Lobby Banner */
+.lobby-banner {
+    background: #11141d;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.banner-subtitle {
+    color: var(--primary-gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.banner-title {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.banner-underline {
+    width: 50px;
+    height: 4px;
+    background-color: var(--primary-gold);
+    border-radius: 2px;
+    margin-top: 0.6rem;
+}
+
+/* Create Battle Card */
 .create-battle-section {
     margin-bottom: 2rem;
     border-radius: 16px;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(10, 10, 10, 0.95));
-    border: 1px solid rgba(255, 215, 0, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    background: #11141d;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
     padding: 1.5rem;
-    backdrop-filter: blur(8px);
+    flex-shrink: 0;
 }
 
 .section-title {
@@ -4111,36 +4153,42 @@ button {
 
 .battle-form {
     display: flex;
-    gap: 0.8rem;
+    flex-direction: column;
+    gap: 0.9rem;
     margin-bottom: 0.5rem;
 }
 
-.input-wrapper {
+.battle-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
-    flex: 1;
+    width: 100%;
 }
 
-.input-icon {
+.battle-input-icon.circle-icon {
     position: absolute;
-    left: 1rem;
-    color: var(--primary-gold);
+    left: 0.8rem;
+    width: 28px;
+    height: 28px;
+    background-color: #0c0e14;
+    border: 1px solid var(--primary-gold);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    color: var(--primary-gold);
+    font-size: 0.85rem;
+    font-weight: 850;
     pointer-events: none;
-    opacity: 0.75;
-    transition: opacity 0.3s ease;
+    z-index: 2;
 }
 
 .battle-input {
     width: 100%;
-    padding: 0.8rem 1rem 0.8rem 2.5rem;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    border-radius: 8px;
+    padding: 0.8rem 1rem 0.8rem 3.2rem;
+    background-color: #12151f;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50px;
     color: white;
     font-size: 0.95rem;
     transition: all 0.3s ease;
@@ -4150,364 +4198,399 @@ button {
 .battle-input:focus {
     outline: none;
     border-color: var(--primary-gold);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.5);
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.battle-input:focus + .input-icon {
-    opacity: 1;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .battle-input::placeholder {
-    color: #888;
+    color: #556072;
 }
 
 .set-battle-btn {
-    background: linear-gradient(135deg, #ffd700, #b8860b);
+    background: linear-gradient(to right, #ffd700, #b8860b);
     color: black;
     border: none;
-    border-radius: 8px;
-    padding: 0 2rem;
-    font-weight: 850;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    font-weight: 800;
     font-size: 1rem;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.25);
     text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 .set-battle-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
     filter: brightness(1.1);
-}
-
-.set-battle-btn:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
 }
 
 .set-battle-btn:disabled {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: none;
     box-shadow: none;
     cursor: not-allowed;
 }
 
+/* Horizontal Scroll Layout & Arrow Controls */
 .battles-section {
     margin-bottom: 2.5rem;
-    background: linear-gradient(to bottom, rgba(15, 15, 15, 0.95), rgba(5, 5, 5, 0.98));
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 215, 0, 0.12);
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    border: none;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    flex-shrink: 0;
 }
 
 .battles-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(to right, transparent, var(--primary-gold), #ffe066, transparent);
-    z-index: 1;
+    display: none;
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    padding-left: 0.2rem;
 }
 
-.rules-btn {
+.header-title-icon {
+    color: var(--primary-gold);
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.battles-scroll-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 215, 0, 0.08);
-    color: var(--primary-gold);
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    border-radius: 20px;
-    padding: 0.4rem 0.9rem;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-}
-
-.rules-btn:hover {
-    background: rgba(255, 215, 0, 0.15);
-    border-color: var(--primary-gold);
-    transform: translateY(-1px);
-}
-
-.rules-btn svg {
-    font-size: 1.1rem;
-}
-
-.rules-modal {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 100;
-    width: 300px;
-    max-width: calc(100% - 2rem);
-    margin: 1rem;
-    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-.rules-content {
-    background: rgba(20, 20, 20, 0.98);
-    border: 1px solid var(--primary-gold);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-}
-
-.rules-content h3 {
-    color: var(--primary-gold);
-    margin-bottom: 1rem;
-    text-align: center;
-    font-size: 1.15rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.rules-content ul {
-    margin-bottom: 1.2rem;
-    padding-left: 1.2rem;
-}
-
-.rules-content li {
-    margin-bottom: 0.6rem;
-    color: #e0e0e0;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.close-rules-btn {
-    background: linear-gradient(135deg, var(--primary-gold), #b8860b);
-    color: black;
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    font-weight: 750;
     width: 100%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
 }
 
-.close-rules-btn:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-}
-
-.spinning-dice {
-    animation: spin 3s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.battles-list {
+.scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    background-color: rgba(18, 21, 31, 0.85);
+    border: 1.5px solid rgba(255, 215, 0, 0.4);
+    border-radius: 50%;
+    color: var(--primary-gold);
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
 }
 
-.battle-card {
-    background: rgba(10, 10, 10, 0.6);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 12px;
+.scroll-arrow:hover {
+    background-color: var(--primary-gold);
+    color: black;
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+
+.scroll-arrow.prev {
+    left: -12px;
+}
+
+.scroll-arrow.next {
+    right: -12px;
+}
+
+.battles-list.scrollable {
+    display: flex;
+    flex-direction: row;
+    gap: 1.2rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    padding: 0.6rem 0.2rem;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: grab;
+    user-select: none;
+}
+
+.battles-list.scrollable:active {
+    cursor: grabbing;
+}
+
+.battles-list.scrollable::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Battle Card Styling */
+.battles-list.scrollable .battle-card {
+    flex: 0 0 280px; /* Fixed width card to prevent horizontal squeezing */
+    width: 280px;
+    background: #11141d;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 16px;
     overflow: hidden;
     position: relative;
     transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
 }
 
-.battle-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,215,0,0.06) 0%, rgba(0,0,0,0) 70%);
-    opacity: 0;
-    transform: scale(0.5);
-    transition: transform 0.5s ease, opacity 0.5s ease;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.battle-card:hover {
+.battles-list.scrollable .battle-card:hover {
     transform: translateY(-4px);
     border-color: var(--primary-gold);
-    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.15);
-}
-
-.battle-card:hover::before {
-    opacity: 1;
-    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.25);
 }
 
 .battle-header {
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
-    background: linear-gradient(90deg, rgba(20, 20, 20, 0.9), rgba(184, 134, 11, 0.15));
+    padding: 1.1rem;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.05);
+    background: #11141d;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.battle-header h3 {
-    color: white;
-    font-size: 1.05rem;
-    margin: 0;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+.player-column {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    text-transform: uppercase;
+    gap: 0.6rem;
+    flex: 1;
 }
 
-.vs-text {
-    color: var(--primary-gold);
+.player-column:last-child {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8c96a8;
+    font-size: 0.85rem;
+}
+
+.player-name {
+    color: #ffffff;
     font-size: 0.9rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 80px;
+}
+
+.vs-badge {
+    background-color: rgba(255, 215, 0, 0.12);
+    border: 1.5px solid rgba(255, 215, 0, 0.3);
+    color: var(--primary-gold);
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.75rem;
     font-weight: 800;
-    text-transform: uppercase;
-    background: rgba(255, 215, 0, 0.12);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    letter-spacing: 1px;
+    text-transform: lowercase;
+    margin: 0 0.5rem;
 }
 
 .battle-details {
-    padding: 1.2rem;
+    padding: 1rem;
     display: flex;
+    gap: 0.8rem;
     justify-content: space-between;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.2);
-    gap: 1rem;
+    background-color: #0c0e14;
 }
 
 .battle-fee, .battle-prize {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.6rem 1rem;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(255, 255, 255, 0.04);
+    padding: 0.6rem 0.4rem;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    min-width: 100px;
-    transition: all 0.3s ease;
-}
-
-.battle-fee:hover, .battle-prize:hover {
-    border-color: rgba(255, 215, 0, 0.4);
-    background: rgba(255, 215, 0, 0.04);
-    transform: translateY(-2px);
+    min-width: 0;
 }
 
 .fee-label, .prize-label {
-    color: #a0a0a0;
-    font-size: 0.75rem;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+    color: #8c96a8;
+    font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.fee-label svg, .prize-label svg {
-    color: var(--primary-gold);
-    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
 }
 
 .fee-amount, .prize-amount {
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.prize-amount {
     color: var(--primary-gold);
+    font-size: 1.15rem;
+    font-weight: 800;
 }
 
 .battle-actions {
+    padding: 0.8rem 1rem 1rem;
+    background-color: #0c0e14;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .join-battle-btn {
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    width: 100%;
+    background: linear-gradient(135deg, #1abc9c, #16a085); /* Teal Gradient */
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    padding: 0.7rem;
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2);
+    box-shadow: 0 4px 10px rgba(26, 188, 156, 0.2);
 }
 
 .join-battle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(46, 204, 113, 0.35);
+    box-shadow: 0 6px 15px rgba(26, 188, 156, 0.4);
     filter: brightness(1.1);
 }
 
 .delete-battle-btn {
+    width: 100%;
     background: linear-gradient(135deg, #e74c3c, #c0392b);
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    padding: 0.7rem;
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
 }
 
 .delete-battle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.35);
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
     filter: brightness(1.1);
+}
+
+/* Running Battles Card Design */
+.battle-card.running {
+    background: #0c0e14 !important;
+    border-color: rgba(46, 204, 113, 0.25) !important;
+    padding: 0 !important;
+}
+
+.battle-card.running:hover {
+    border-color: #2ecc71 !important;
+    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.2) !important;
+}
+
+.battle-badge-container {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 2;
+}
+
+.status-badge.active {
+    background: rgba(46, 204, 113, 0.15) !important;
+    border: 1px solid #2ecc71 !important;
+    color: #2ecc71 !important;
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.running-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.2rem 1.2rem 1.2rem !important; /* space at top for badge */
+    background-color: transparent !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.avatar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.gaming-avatar-wrapper {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-gold);
+    background: #11141d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+    overflow: hidden;
+}
+
+.gaming-avatar {
+    color: #8c96a8;
+    font-size: 1.5rem;
+}
+
+.avatar-username {
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.running-match-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 0.2rem;
+}
+
+.match-id {
+    color: #8c96a8;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.running-vs {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.5px;
 }
 
 .no-battles {
@@ -4522,6 +4605,8 @@ button {
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .no-battles svg {
@@ -4614,21 +4699,6 @@ button {
     color: #2ecc71;
 }
 
-.running-battles .battle-card {
-    border-color: rgba(46, 204, 113, 0.3);
-    background: rgba(10, 15, 10, 0.6);
-}
-
-.running-battles .battle-card:hover {
-    border-color: #2ecc71;
-    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.15);
-}
-
-.running-battles .battle-header {
-    background: linear-gradient(90deg, rgba(20, 20, 20, 0.9), rgba(46, 204, 113, 0.1));
-    border-bottom-color: rgba(46, 204, 113, 0.15);
-}
-
 .creator-instructions {
     text-align: left;
     margin: 1.2rem 0;
@@ -4712,32 +4782,27 @@ button {
     color: white;
 }
 
-
 .player-status.ready {
     background-color: #00aa00;
     color: white;
 }
-
 
 @media (max-width: 600px) {
     .battle-form {
         flex-direction: column;
     }
 
-    
     .battle-details {
         flex-direction: column;
         gap: 1rem;
         align-items: flex-start;
     }
 
-    
     .play-btn {
         align-self: center;
         margin-top: 0.5rem;
         width: 100%;
     }
-
 }
 
 

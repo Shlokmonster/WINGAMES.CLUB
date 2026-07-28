@@ -669,6 +669,9 @@ io.on('connection', (socket) => {
           gameRoom.status = 'active';
           gameRooms.set(gameId, gameRoom);
           
+          // Store game in Supabase
+          storeGameInSupabase(gameRoom);
+          
           // Process wallet deductions for both players
           try {
             // Get the bet amount from the game room
@@ -1085,7 +1088,7 @@ async function storeGameInSupabase(gameRoom) {
           room_code: gameRoom.roomCode,
           bet_amount: betAmount,
           status: gameRoom.status,
-          created_at: gameRoom.createdAt,
+          created_at: gameRoom.createdAt || new Date().toISOString(),
           game_type: 'ludo',
           game_data: {
             players: gameRoom.players.map(p => ({
@@ -1094,10 +1097,33 @@ async function storeGameInSupabase(gameRoom) {
             }))
           }
         }
-      ]);
+      ])
+      .select();
     
     if (error) throw error;
     console.log('Game stored in Supabase:', data);
+
+    if (data && data.length > 0) {
+      const gameId = data[0].id;
+      // Insert players into game_players junction table for RLS policies
+      const playerInserts = gameRoom.players.map((p, idx) => ({
+        game_id: gameId,
+        user_id: p.userId,
+        username: p.username,
+        position: idx + 1,
+        ready: true
+      }));
+      
+      const { error: playersError } = await supabase
+        .from('game_players')
+        .insert(playerInserts);
+        
+      if (playersError) {
+        console.error('Error storing game players in Supabase:', playersError);
+      } else {
+        console.log('Game players stored in Supabase successfully');
+      }
+    }
   } catch (error) {
     console.error('Error storing game in Supabase:', error);
   }
@@ -1307,6 +1333,15 @@ app.post('/api/verify-match', async (req, res) => {
     if (updateError) {
       return res.status(500).json({ error: 'Failed to update match status' });
     }
+    
+    // Also update game status and winner_id in Supabase games table to completed
+    await supabase
+      .from('games')
+      .update({ 
+        status: 'completed',
+        winner_id: winnerId
+      })
+      .eq('room_code', roomCode);
     
     // Update winner's wallet
     const { data: walletData, error: walletError } = await supabase

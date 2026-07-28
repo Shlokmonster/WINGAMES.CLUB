@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaDice, FaSpinner, FaInfoCircle, FaCoins, FaTrophy, FaMoneyBillWave } from 'react-icons/fa';
+import { FaDice, FaSpinner, FaInfoCircle, FaCoins, FaTrophy, FaMoneyBillWave, FaGamepad, FaChevronLeft, FaChevronRight, FaUser, FaQuestionCircle, FaDollarSign, FaInfo } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { supabase } from '../lib/supabase';
@@ -33,6 +33,43 @@ const PlayGames = () => {
     const [openBattles, setOpenBattles] = useState([]);
     const [realBattles, setRealBattles] = useState([]);
     // No runningBattles state needed for rendering
+    const openScrollRef = useRef(null);
+    const runningScrollRef = useRef(null);
+
+    const scrollList = (ref, direction) => {
+        if (ref.current) {
+            const scrollAmount = 300; // scroll step in pixels
+            ref.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleMouseDown = (e, ref) => {
+        if (!ref.current) return;
+        ref.current.isDown = true;
+        ref.current.startX = e.pageX - ref.current.offsetLeft;
+        ref.current.scrollLeftStart = ref.current.scrollLeft;
+    };
+
+    const handleMouseLeave = (ref) => {
+        if (!ref.current) return;
+        ref.current.isDown = false;
+    };
+
+    const handleMouseUp = (ref) => {
+        if (!ref.current) return;
+        ref.current.isDown = false;
+    };
+
+    const handleMouseMove = (e, ref) => {
+        if (!ref.current || !ref.current.isDown) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const walk = (x - ref.current.startX) * 1.5;
+        ref.current.scrollLeft = ref.current.scrollLeftStart - walk;
+    };
 
     // Listen for real running battles
     // Handler for running battles update
@@ -110,7 +147,6 @@ const PlayGames = () => {
     const [isCreatingBattle, setIsCreatingBattle] = useState(false);
     const [isJoiningBattle, setIsJoiningBattle] = useState(false);
     const [joiningBattleId, setJoiningBattleId] = useState(null);
-    const [showRules, setShowRules] = useState(false);
     
     // Utility state
     const [error, setError] = useState('');
@@ -772,12 +808,19 @@ const PlayGames = () => {
         <div className="play-games-container">
             <ToastContainer position="top-center" autoClose={4000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             
+            {/* Top Lobby Banner */}
+            <div className="lobby-banner">
+                <span className="banner-subtitle">ELITE PLAYER</span>
+                <h1 className="banner-title">LOBBY</h1>
+                <div className="banner-underline"></div>
+            </div>
+
             {/* Create Battle Section */}
             <div className="create-battle-section">
                 <h2 className="section-title">CREATE A BATTLE!</h2>
                 <div className="battle-form">
-                    <div className="input-wrapper">
-                        <span className="input-icon"><FaCoins /></span>
+                    <div className="battle-input-wrapper">
+                        <span className="battle-input-icon circle-icon"><FaDollarSign /></span>
                         <input
                             type="number"
                             className="battle-input"
@@ -787,8 +830,8 @@ const PlayGames = () => {
                             disabled={isCreatingBattle}
                         />
                     </div>
-                    <div className="input-wrapper">
-                        <span className="input-icon"><FaInfoCircle /></span>
+                    <div className="battle-input-wrapper">
+                        <span className="battle-input-icon circle-icon"><FaInfo /></span>
                         <input
                             type="text"
                             className="battle-input"
@@ -811,55 +854,54 @@ const PlayGames = () => {
             {/* Open Battles Section */}
             <div className="battles-section">
                 <div className="section-header">
-                    <h2 className="section-title"><FaDice /> Open Battles</h2>
-                    <button className="rules-btn" onClick={() => setShowRules(!showRules)}>
-                        <span>RULES</span> <BsInfoCircleFill />
-                    </button>
+                    <h2 className="section-title"><FaDice className="header-title-icon" /> Open Battles</h2>
                 </div>
                 
-                {/* Rules Modal - Now positioned to the side */}
-                {showRules && (
-                    <div className="rules-modal">
-                        <div className="rules-content">
-                            <h3>Game Rules</h3>
-                            <ul>
-                                <li>Create a battle with your desired bet amount</li>
-                                <li>Wait for another player to join your battle</li>
-                                <li>The creator will create a room in Ludo King app</li>
-                                <li>Share the room code with your opponent</li>
-                                <li>Both players must click 'Ready' to start the game</li>
-                                <li>Winner must submit a screenshot for verification</li>
-                            </ul>
-                            <button className="close-rules-btn" onClick={() => setShowRules(false)}>
-                                <span>Close</span>
-                            </button>
+                {/* List of Open Battles (Horizontal Scrollable or Centered Empty State) */}
+                <div className="battles-scroll-wrapper">
+                    {openBattles.length === 0 ? (
+                        <div className="no-battles">
+                            <FaInfoCircle />
+                            <p>No open battles available</p>
+                            <span>Create a battle to get started!</span>
                         </div>
-                    </div>
-                )}
-                
-                {/* List of Open Battles */}
-                <div className="battles-list-wrapper">
-                    <div className="battles-list">
-                        {openBattles.length === 0 ? (
-                            <div className="no-battles">
-                                <FaInfoCircle />
-                                <p>No open battles available</p>
-                                <span>Create a battle to get started!</span>
-                            </div>
-                        ) : (
-                            openBattles.map((battle) => (
-                                <div key={battle.id} className="battle-card">
-                                    <div className="battle-header">
-                                        <h3>{battle.creator?.username || 'Unknown'} <span className="vs-text">vs</span> {battle.opponent?.username || 'Unknown'}</h3>
-                                    </div>
-                                    <div className="battle-details">
-                                        <div className="battle-fee">
-                                            <span className="fee-label"><FaCoins /> Entry Fee</span>
-                                            <span className="fee-amount">₹{battle.entryFee}</span>
+                    ) : (
+                        <>
+                            <button className="scroll-arrow prev" onClick={() => scrollList(openScrollRef, 'left')}>
+                                <FaChevronLeft />
+                            </button>
+                            <div 
+                                className="battles-list scrollable" 
+                                ref={openScrollRef}
+                                onMouseDown={(e) => handleMouseDown(e, openScrollRef)}
+                                onMouseLeave={() => handleMouseLeave(openScrollRef)}
+                                onMouseUp={() => handleMouseUp(openScrollRef)}
+                                onMouseMove={(e) => handleMouseMove(e, openScrollRef)}
+                            >
+                                {openBattles.map((battle) => (
+                                    <div key={battle.id} className="battle-card">
+                                        <div className="battle-header">
+                                            <div className="player-column">
+                                                <div className="avatar-circle"><FaUser /></div>
+                                                <span className="player-name">{battle.creator?.username || 'Unknown'}</span>
+                                            </div>
+                                            <span className="vs-badge">vs</span>
+                                            <div className="player-column">
+                                                <span className="player-name">{battle.opponent?.username || 'Waiting...'}</span>
+                                                <div className="avatar-circle">
+                                                    {battle.opponent?.username ? <FaUser /> : <FaQuestionCircle />}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="battle-prize">
-                                            <span className="prize-label"><FaTrophy /> Prize</span>
-                                            <span className="prize-amount">₹{battle.prize}</span>
+                                        <div className="battle-details">
+                                            <div className="battle-fee">
+                                                <span className="fee-label">Entry Fee</span>
+                                                <span className="fee-amount">₹{battle.entryFee}</span>
+                                            </div>
+                                            <div className="battle-prize">
+                                                <span className="prize-label">Prize</span>
+                                                <span className="prize-amount">₹{battle.prize}</span>
+                                            </div>
                                         </div>
                                         <div className="battle-actions">
                                             {battle.creator.userId === user?.id ? (
@@ -884,54 +926,80 @@ const PlayGames = () => {
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                                ))}
+                            </div>
+                            <button className="scroll-arrow next" onClick={() => scrollList(openScrollRef, 'right')}>
+                                <FaChevronRight />
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
             
             {/* Running Battles Section */}
             <div className="battles-section running-battles">
-                <h3 className="section-title"><FaDice className="spinning-dice" /> Running Battles</h3>
-                <div className="battles-list">
-                    {(realBattles.length === 0) ? (
+                <h3 className="section-title"><FaGamepad className="header-title-icon" /> Running Battles</h3>
+                
+                {/* List of Running Battles (Horizontal Scrollable or Centered Empty State) */}
+                <div className="battles-scroll-wrapper">
+                    {realBattles.length === 0 ? (
                         <div className="no-battles">
                             <FaInfoCircle />
                             <p>No running battles</p>
                             <span>Join or create a battle to get started!</span>
                         </div>
                     ) : (
-                        realBattles
-                            .filter(battle => 
-                                battle.creator?.username && 
-                                battle.opponent?.username && 
-                                battle.creator.username !== 'Unknown' &&
-                                battle.opponent.username !== 'Unknown' &&
-                                battle.entryFee && battle.entryFee > 0 &&
-                                battle.prize && battle.prize > 0
-                            )
-                            .map((battle) => (
-                            <div key={battle.id} className="battle-card">
-                                <div className="battle-header">
-                                    <h3>{battle.creator?.username || 'Unknown'} <span className="vs-text">vs</span> {battle.opponent?.username || 'Unknown'}</h3>
-                                </div>
-                                <div className="battle-details">
-                                    <div className="battle-fee">
-                                        <span className="fee-label"><FaCoins /> Entry Fee</span>
-                                        <span className="fee-amount">₹{battle.entryFee}</span>
+                        <>
+                            <button className="scroll-arrow prev" onClick={() => scrollList(runningScrollRef, 'left')}>
+                                <FaChevronLeft />
+                            </button>
+                            <div 
+                                className="battles-list scrollable" 
+                                ref={runningScrollRef}
+                                onMouseDown={(e) => handleMouseDown(e, runningScrollRef)}
+                                onMouseLeave={() => handleMouseLeave(runningScrollRef)}
+                                onMouseUp={() => handleMouseUp(runningScrollRef)}
+                                onMouseMove={(e) => handleMouseMove(e, runningScrollRef)}
+                            >
+                                {realBattles
+                                    .filter(battle => 
+                                        battle.creator?.username && 
+                                        battle.opponent?.username && 
+                                        battle.creator.username !== 'Unknown' &&
+                                        battle.opponent.username !== 'Unknown' &&
+                                        battle.entryFee && battle.entryFee > 0 &&
+                                        battle.prize && battle.prize > 0
+                                    )
+                                    .map((battle) => (
+                                    <div key={battle.id} className="battle-card running">
+                                        <div className="battle-badge-container">
+                                            <span className="status-badge active">In Progress</span>
+                                        </div>
+                                        <div className="battle-details running-grid">
+                                            <div className="avatar-column">
+                                                <div className="gaming-avatar-wrapper">
+                                                    <FaUser className="gaming-avatar" />
+                                                </div>
+                                                <span className="avatar-username">{battle.creator?.username || 'Unknown'}</span>
+                                            </div>
+                                            <div className="running-match-info">
+                                                <span className="match-id">MATCH ID: #{battle.id ? battle.id.substring(0, 4) : '0000'}</span>
+                                                <span className="running-vs">VS</span>
+                                            </div>
+                                            <div className="avatar-column">
+                                                <div className="gaming-avatar-wrapper">
+                                                    <FaUser className="gaming-avatar" />
+                                                </div>
+                                                <span className="avatar-username">{battle.opponent?.username || 'Unknown'}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="battle-prize">
-                                        <span className="prize-label"><FaTrophy /> Prize</span>
-                                        <span className="prize-amount">₹{battle.prize}</span>
-                                    </div>
-                                    <div className="battle-status">
-                                        <span className="status-label">Status</span>
-                                        <span className="status-value active">In Progress</span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
-                        ))
+                            <button className="scroll-arrow next" onClick={() => scrollList(runningScrollRef, 'right')}>
+                                <FaChevronRight />
+                            </button>
+                        </>
                     )}
                 </div>
             </div>

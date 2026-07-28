@@ -94,40 +94,37 @@ export function MatchVerification() {
                 .from('match-screenshots')
                 .getPublicUrl(fileName);
 
-            // First create a game record
+            // Find existing game record in Supabase (created by the server)
+            const searchRoomCode = (lastGameInfo?.roomCode || roomCode).trim().toUpperCase();
             const { data: gameData, error: gameError } = await supabase
                 .from('games')
-                .insert([{
-                    room_code: lastGameInfo?.roomCode || roomCode,
-                    bet_amount: lastGameInfo?.betAmount || 0,
-                    status: 'pending',
-                    created_at: new Date().toISOString(),
-                    game_type: 'ludo',
-                    game_data: {
-                        players: [{
-                            user_id: user.id,
-                            username: user.user_metadata?.username || 'Player'
-                        }]
-                    }
-                }])
-                .select();
+                .select('id, bet_amount')
+                .eq('room_code', searchRoomCode)
+                .order('created_at', { ascending: false });
+
+            let gameId = null;
+            let betAmount = lastGameInfo?.betAmount || 0;
 
             if (gameError) {
-                console.error('Game creation error:', gameError);
-                throw new Error('Failed to create game record. Please try again.');
+                console.error('Error fetching game:', gameError);
+            } else if (gameData && gameData.length > 0) {
+                gameId = gameData[0].id;
+                betAmount = gameData[0].bet_amount || betAmount;
+            } else {
+                console.warn(`Game room not found for code: ${searchRoomCode}. Proceeding with null game_id.`);
             }
 
-            // Store verification request in database with game_id
+            // Store verification request in database
             const { error: dbError } = await supabase
                 .from('match_verifications')
                 .insert([{
                     user_id: user.id,
-                    room_code: lastGameInfo?.roomCode || roomCode,
+                    room_code: searchRoomCode,
                     screenshot_url: publicUrl,
                     status: 'pending',
                     submitted_at: new Date().toISOString(),
-                    bet_amount: lastGameInfo?.betAmount || 0,
-                    game_id: gameData[0].id // Link to the created game
+                    bet_amount: betAmount,
+                    game_id: gameId // Link to the existing game, or null if not found
                 }]);
 
             if (dbError) {
@@ -225,8 +222,9 @@ export function MatchVerification() {
                             <input
                                 type="text"
                                 id="roomCode"
-                                value={lastGameInfo?.roomCode || ''}
-                                readOnly
+                                value={roomCode}
+                                onChange={(e) => setRoomCode(e.target.value)}
+                                readOnly={!!lastGameInfo}
                                 placeholder="Room code (4-12 characters)"
                                 maxLength={12}
                             />
