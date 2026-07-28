@@ -3,8 +3,8 @@
   publish = "dist"
 
 [build.environment]
-  # Backend (Railway) URL for API and Socket.IO
-  VITE_BACKEND_URL = "https://ludo-new-production.up.railway.app"
+  # Backend (Render) URL for API and Socket.IO
+  VITE_BACKEND_URL = "https://wingames-club.onrender.com"
   # Supabase project URL
   VITE_SUPABASE_URL = "https://hiahoywzuwgdptkbimkl.supabase.co"
   # Supabase anon key
