@@ -776,22 +776,28 @@ const PlayGames = () => {
             <div className="create-battle-section">
                 <h2 className="section-title">CREATE A BATTLE!</h2>
                 <div className="battle-form">
-                    <input
-                        type="number"
-                        className="battle-input"
-                        placeholder="Amount"
-                        value={battleAmount}
-                        onChange={(e) => setBattleAmount(e.target.value)}
-                        disabled={isCreatingBattle}
-                    />
-                    <input
-                        type="text"
-                        className="battle-input"
-                        placeholder="Enter your comment"
-                        value={battleComment}
-                        onChange={(e) => setBattleComment(e.target.value)}
-                        disabled={isCreatingBattle}
-                    />
+                    <div className="input-wrapper">
+                        <span className="input-icon"><FaCoins /></span>
+                        <input
+                            type="number"
+                            className="battle-input"
+                            placeholder="Amount"
+                            value={battleAmount}
+                            onChange={(e) => setBattleAmount(e.target.value)}
+                            disabled={isCreatingBattle}
+                        />
+                    </div>
+                    <div className="input-wrapper">
+                        <span className="input-icon"><FaInfoCircle /></span>
+                        <input
+                            type="text"
+                            className="battle-input"
+                            placeholder="Enter your comment"
+                            value={battleComment}
+                            onChange={(e) => setBattleComment(e.target.value)}
+                            disabled={isCreatingBattle}
+                        />
+                    </div>
                     <button
                         className="set-battle-btn"
                         onClick={handleCreateBattle}
@@ -805,7 +811,7 @@ const PlayGames = () => {
             {/* Open Battles Section */}
             <div className="battles-section">
                 <div className="section-header">
-                    <h2 className="section-title">Open Battles</h2>
+                    <h2 className="section-title"><FaDice /> Open Battles</h2>
                     <button className="rules-btn" onClick={() => setShowRules(!showRules)}>
                         <span>RULES</span> <BsInfoCircleFill />
                     </button>
@@ -833,7 +839,6 @@ const PlayGames = () => {
                 
                 {/* List of Open Battles */}
                 <div className="battles-list-wrapper">
-                    <h3 className="section-title"><FaDice /> Open Battles</h3>
                     <div className="battles-list">
                         {openBattles.length === 0 ? (
                             <div className="no-battles">
