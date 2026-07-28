@@ -11,7 +11,6 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 
 // Configure CORS
-// Allow both Netlify (production) and localhost:5174 (development) for CORS
 const allowedOrigins = [
   'https://wingames.club',        // production (main domain)
   'https://ludonews.netlify.app', // old production (if still needed)
@@ -20,11 +19,28 @@ const allowedOrigins = [
   'http://localhost:5174'        // local dev (alternative port)
 ];
 
-app.use(cors({
-  origin: allowedOrigins,
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.includes(origin) || 
+                      origin.startsWith('http://localhost:') || 
+                      origin.endsWith('netlify.app') || 
+                      origin.endsWith('wingames.club');
+                      
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
-  credentials: true
-}));
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -33,25 +49,36 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO with CORS
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'OPTIONS'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']
-  },
+  cors: corsOptions,
   transports: ['websocket', 'polling'],
   allowEIO3: true
 });
 
 // Initialize Redis client
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const isSecureRedis = redisUrl.startsWith('rediss://');
+
 const redisClient = Redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379' 
+  url: redisUrl,
+  socket: isSecureRedis ? {
+    tls: true,
+    rejectUnauthorized: false // necessary for Render/external Redis providers
+  } : {}
+});
+
+// Error handling is mandatory for Redis v4+ to prevent crash on connection failure/drop
+redisClient.on('error', (err) => {
+  console.error('Redis Client Error:', err);
 });
 
 // Connect to Redis
 (async () => {
-  await redisClient.connect();
-  console.log('Connected to Redis');
+  try {
+    await redisClient.connect();
+    console.log('Connected to Redis');
+  } catch (err) {
+    console.error('Failed to connect to Redis on startup:', err);
+  }
 })();
 
 // Initialize Supabase client
